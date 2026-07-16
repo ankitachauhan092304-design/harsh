@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+(function() {
     // Check if we are on the credit score estimator page
     const container = document.querySelector('h3') && Array.from(document.querySelectorAll('h3')).find(el => el.textContent.includes('Credit Score Estimator')) ? document.querySelector('.max-w-4xl') : null;
     if (!container) return;
@@ -278,8 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
             riskFlags = [];
             renderQuestion();
         });
-    }
-
     // Initialize overriding React HTML
     renderQuestion();
-});
+})();
