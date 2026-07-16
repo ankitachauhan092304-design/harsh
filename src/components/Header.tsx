@@ -83,11 +83,7 @@ export default function Header() {
   return (
     <header
       ref={headerRef}
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        scrolled
-          ? 'glassmorphism py-1.5 md:py-2 shadow-md'
-          : 'bg-transparent py-3 md:py-4.5'
-      }`}
+      className="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-white border-b border-slate-100 shadow-sm py-2 md:py-3"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-8 flex justify-between items-center">
         {/* Logo */}
@@ -142,37 +138,27 @@ export default function Header() {
               )}
             </button>
 
-            <AnimatePresence>
-              {activeDropdown === 'services' && (
-                <div className="absolute left-0 top-full pt-2 w-80 z-20">
-                  <motion.div
-                    initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                    className="bg-white rounded-2xl shadow-xl border border-slate-100 p-4 w-full"
-                  >
-                    <div className="grid gap-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3">Products & Solutions</span>
-                      {services.map((item) => (
-                        <Link
-                          key={item.name}
-                          href={item.href}
-                          className="flex flex-col p-3 rounded-xl hover:bg-slate-50 transition-colors duration-200 group"
-                        >
-                          <span className="text-sm font-bold text-slate-800 group-hover:text-[#0B4F9C] transition-colors duration-200">
-                            {item.name}
-                          </span>
-                          <span className="text-xs text-slate-500 mt-0.5 line-clamp-1">
-                            {item.desc}
-                          </span>
-                        </Link>
-                      ))}
-                    </div>
-                  </motion.div>
+            <div className="absolute left-0 top-full pt-2 w-80 z-20 hidden group-hover:block">
+              <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-4 w-full">
+                <div className="grid gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3">Products & Solutions</span>
+                  {services.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className="flex flex-col p-3 rounded-xl hover:bg-slate-50 transition-colors duration-200 group"
+                    >
+                      <span className="text-sm font-bold text-slate-800 group-hover:text-[#0B4F9C] transition-colors duration-200">
+                        {item.name}
+                      </span>
+                      <span className="text-xs text-slate-500 mt-0.5 line-clamp-1">
+                        {item.desc}
+                      </span>
+                    </Link>
+                  ))}
                 </div>
-              )}
-            </AnimatePresence>
+              </div>
+            </div>
           </div>
 
           {/* Calculators Dropdown */}
@@ -194,45 +180,35 @@ export default function Header() {
               )}
             </button>
 
-            <AnimatePresence>
-              {activeDropdown === 'calculators' && (
-                <div className="absolute left-0 top-full pt-2 w-80 z-20">
-                  <motion.div
-                    initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                    className="bg-white rounded-2xl shadow-xl border border-slate-100 p-4 w-full"
-                  >
-                  <div className="grid gap-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3">Interactive Utilities</span>
-                    {calculators.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.name}
-                          href={item.href}
-                          className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors duration-200 group"
-                        >
-                          <div className="p-2 rounded-lg bg-blue-50 text-[#0B4F9C] group-hover:bg-[#0B4F9C] group-hover:text-white transition-colors duration-200 mt-0.5">
-                            <Icon size={16} />
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-bold text-slate-800 group-hover:text-[#0B4F9C] transition-colors duration-200">
-                              {item.name}
-                            </span>
-                            <span className="text-xs text-slate-500 mt-0.5 line-clamp-1">
-                              {item.desc}
-                            </span>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </motion.div>
+            <div className="absolute left-0 top-full pt-2 w-80 z-20 hidden group-hover:block">
+              <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-4 w-full">
+                <div className="grid gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3">Interactive Utilities</span>
+                  {calculators.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors duration-200 group"
+                      >
+                        <div className="p-2 rounded-lg bg-blue-50 text-[#0B4F9C] group-hover:bg-[#0B4F9C] group-hover:text-white transition-colors duration-200 mt-0.5">
+                          <Icon size={16} />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-slate-800 group-hover:text-[#0B4F9C] transition-colors duration-200">
+                            {item.name}
+                          </span>
+                          <span className="text-xs text-slate-500 mt-0.5 line-clamp-1">
+                            {item.desc}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
-            )}
-            </AnimatePresence>
+            </div>
           </div>
 
           <Link
@@ -288,21 +264,18 @@ export default function Header() {
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="lg:hidden p-2 rounded-xl text-slate-800 hover:bg-slate-100 transition-colors"
+          id="mobile-menu-btn"
+          aria-label="Toggle Mobile Menu"
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
       {/* Mobile Navigation Drawer */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: 'auto' }}
-            exit={{ opacity: 0, y: -20, height: 0 }}
-            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-            className="lg:hidden w-full bg-white border-t border-slate-100 overflow-hidden shadow-lg"
-          >
+      <div
+        id="mobile-nav-panel"
+        className="lg:hidden w-full bg-white border-t border-slate-100 overflow-hidden shadow-lg hidden"
+      >
             <div className="px-6 py-6 flex flex-col gap-4 max-h-[85vh] overflow-y-auto">
               <Link href="/" className="text-base font-bold text-slate-800 py-1.5 border-b border-slate-50">Home</Link>
               <Link href="/about" className="text-base font-bold text-slate-800 py-1.5 border-b border-slate-50">About</Link>
@@ -352,11 +325,9 @@ export default function Header() {
                 >
                   Apply for Loan
                 </Link>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      </div>
     </header>
   );
 }

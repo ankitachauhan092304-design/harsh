@@ -280,7 +280,7 @@ const MOCK_SETTINGS: Record<string, string> = {
   siteName: 'Whitestone Fincorp',
   contactPhone: '+91 98249 75488',
   contactEmail: 'info@whitestonefincorp.com',
-  contactAddress: '207/21 WHITESTONE FIN CORP, OPP ADC BAN, RAKHIAL, AHMEDABAD – 380023',
+  contactAddress: '207/21 WHITESTONE FINCORP, Opp. ADC Bank, RAKHIAL, AHMEDABAD – 380023',
   whatsappNumber: '919824975488',
   facebookUrl: 'https://facebook.com/whitestonefincorp',
   linkedinUrl: 'https://linkedin.com/company/whitestonefincorp',

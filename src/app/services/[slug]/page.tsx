@@ -283,6 +283,12 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+export function generateStaticParams() {
+  return Object.keys(PRODUCT_DATA).map((slug) => ({
+    slug: slug,
+  }));
+}
+
 export default async function ServiceSlugPage({ params }: Props) {
   const { slug } = await params;
   const product = PRODUCT_DATA[slug];

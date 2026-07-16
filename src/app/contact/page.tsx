@@ -40,7 +40,7 @@ export default function ContactPage() {
                 <div className="flex flex-col">
                   <span className="text-slate-800 font-bold">Office Address</span>
                   <span className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    207/21 WHITESTONE FIN CORP, OPP ADC BAN, RAKHIAL, AHMEDABAD – 380023
+                    207/21 WHITESTONE FINCORP, Opp. ADC Bank, RAKHIAL, AHMEDABAD – 380023
                   </span>
                 </div>
               </div>
@@ -65,7 +65,7 @@ export default function ContactPage() {
                 <Clock size={20} className="text-[#00A86B] shrink-0 mt-0.5" />
                 <div className="flex flex-col">
                   <span className="text-slate-800 font-bold">Operating Hours</span>
-                  <span className="text-xs text-slate-500 mt-0.5">Mon - Sat: 9:30 AM - 6:30 PM (Sunday Closed)</span>
+                  <span className="text-xs text-slate-500 mt-0.5">Mon - Sat: 10:00 AM - 7:00 PM (Sunday Closed)</span>
                 </div>
               </div>
             </div>

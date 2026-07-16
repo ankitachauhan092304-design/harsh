@@ -78,7 +78,7 @@ export default function RootLayout({
     'priceRange': '$$',
     'address': {
       '@type': 'PostalAddress',
-      'streetAddress': '207/21 WHITESTONE FIN CORP, OPP ADC BAN, RAKHIAL',
+      'streetAddress': '207/21 WHITESTONE FINCORP, Opp. ADC Bank, RAKHIAL',
       'addressLocality': 'Ahmedabad',
       'postalCode': '380023',
       'addressCountry': 'IN',
@@ -93,8 +93,8 @@ export default function RootLayout({
         'Friday',
         'Saturday'
       ],
-      'opens': '09:30',
-      'closes': '18:30'
+      'opens': '10:00',
+      'closes': '19:00'
     },
     'sameAs': [
       'https://facebook.com/whitestonefincorp',
@@ -116,7 +116,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col font-inter bg-slate-50 text-slate-800" suppressHydrationWarning>
         <Header />
-        <main className="flex-grow" style={{ paddingTop: 'var(--header-height, 116px)' }}>
+        <main className="flex-grow pt-[84px] md:pt-[116px]">
           {children}
         </main>
         <Footer />

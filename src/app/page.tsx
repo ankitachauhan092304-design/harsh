@@ -15,7 +15,6 @@ import {
   ChevronDown,
   TrendingUp,
   Lock,
-  Coins,
   Star
 } from 'lucide-react';
 import EMICalculator from '@/components/calculators/EMICalculator';
@@ -151,7 +150,7 @@ export default function HomePage() {
         <div className="absolute bottom-10 right-20 w-96 h-96 rounded-full bg-[#00A86B]/5 blur-3xl -z-10 pointer-events-none" />
 
         {/* Background Network Pattern */}
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5" />
+        <div className="absolute inset-0 bg-[url(/grid.svg)] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5" />
 
         <div className="max-w-7xl mx-auto px-6 md:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start w-full relative z-10">
           <div className="lg:col-span-7 flex flex-col gap-6 text-center lg:text-left h-full">
@@ -252,7 +251,7 @@ export default function HomePage() {
               <div className="relative w-full h-56 rounded-3xl bg-white border border-slate-100 shadow-2xl shadow-blue-900/5 overflow-hidden flex items-center justify-center p-6">
                 
                 {/* Background grid texture */}
-                <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-10" />
+                <div className="absolute inset-0 bg-[url(/grid.svg)] bg-center opacity-10" />
 
                 {/* Main Abstract Graphic Area */}
                 <div className="relative w-full h-full flex flex-col justify-end">
@@ -524,7 +523,7 @@ export default function HomePage() {
                 transition={{ duration: 0.5, delay: idx * 0.15 }}
                 className="flex flex-col items-center text-center gap-5 relative group"
               >
-                <div className="w-14 h-14 rounded-full border-4 border-slate-50 bg-white group-hover:border-blue-100 flex items-center justify-center text-[#0B4F9C] font-black font-dmsans text-xl shadow-lg shadow-slate-200/50 group-hover:bg-gradient-premium group-hover:text-white group-hover:shadow-blue-500/20 transition-all duration-300 z-10">
+                <div className="w-14 h-14 rounded-full border-4 border-slate-50 bg-white group-hover:border-blue-100 flex items-center justify-center text-[#0B4F9C] font-black font-dmsans text-xl shadow-lg shadow-slate-200/50 group-hover:bg-gradient-premium group-hover:shadow-blue-500/20 transition-all duration-300 z-10">
                   {step.step}
                 </div>
                 <div className="flex flex-col gap-1.5">

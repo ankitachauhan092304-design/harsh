@@ -65,6 +65,12 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+export function generateStaticParams() {
+  return Object.keys(LEGAL_DATA).map((slug) => ({
+    slug: slug,
+  }));
+}
+
 export default async function LegalPage({ params }: Props) {
   const { slug } = await params;
   const legal = LEGAL_DATA[slug];

@@ -260,8 +260,8 @@ export default function Footer() {
             <div className="flex items-start gap-2.5">
               <MapPin size={15} className="text-[#00A86B] shrink-0 mt-0.5" />
               <span className="leading-relaxed text-xs">
-                207/21 WHITESTONE FIN CORP,<br />
-                OPP ADC BAN, RAKHIAL,<br />
+                207/21 WHITESTONE FINCORP,<br />
+                Opp. ADC Bank, RAKHIAL,<br />
                 AHMEDABAD – 380023
               </span>
             </div>

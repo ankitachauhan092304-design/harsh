@@ -61,7 +61,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
         if (!/^[6-9]\d{9}$/.test(String(value))) return 'Enter a valid 10-digit Indian mobile number.';
         return '';
       case 'email':
-        if (!String(value).trim()) return 'Email address is required.';
+        if (!String(value).trim()) return ''; // Optional
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))) return 'Enter a valid email address.';
         return '';
       case 'city':
@@ -165,7 +165,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     e.preventDefault();
     if (formData.honeypot) return;
 
-    setTouched({ name: true, phone: true, email: true, city: true, loanAmount: true, consent: true });
+    setTouched({ name: true, phone: true, city: true, loanAmount: true, consent: true });
     if (!validateAll()) return;
 
     const lastSubmission = localStorage.getItem('last_lead_sub');
@@ -439,7 +439,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    <Mail size={11} /> Email Address <span className="text-rose-400">*</span>
+                    <Mail size={11} /> Email Address
                   </label>
                   <div className="relative">
                     <input type="email" name="email" value={formData.email} onChange={handleInputChange} onBlur={() => handleBlur('email')} placeholder="name@example.com" className={fieldClass('email')} />

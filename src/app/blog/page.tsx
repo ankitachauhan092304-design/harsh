@@ -2,8 +2,6 @@ import React from 'react';
 import { dbService } from '@/lib/dbService';
 import BlogList from '@/components/BlogList';
 
-export const revalidate = 0; // Disable cache to get fresh CMS updates
-
 export const metadata = {
   title: 'Whitestone Fincorp Blog | Financial Insights & Credit Advice',
   description: 'Read the latest financial strategy guides, borrowing tips, credit score hacks, and bank lending updates curated by Whitestone credit advisors.',

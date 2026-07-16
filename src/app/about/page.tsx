@@ -2,15 +2,7 @@
 
 import React from 'react';
 import { ShieldCheck, Target, Building2 } from 'lucide-react';
-import Image from 'next/image';
-
 export default function AboutPage() {
-  const leadership = [
-    { name: 'Devraj Sharma', role: 'Managing Director & Founder', desc: 'Over 20+ years of banking experience at HDFC and ICICI credit risk departments.', img: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=200&auto=format&fit=crop' },
-    { name: 'Ankita Deshmukh', role: 'Chief of Loan Operations', desc: 'Expert in MSME credit policies, underwriting systems, and bank relationship portfolios.', img: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop' },
-    { name: 'Sanjay Nair', role: 'Head of Retail Advisory', desc: 'Dedicated to optimizing retail loan eligibility metrics and customized debt consolidations.', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop' }
-  ];
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-inter">
       {/* Hero */}
@@ -54,37 +46,6 @@ export default function AboutPage() {
             <p className="text-xs md:text-sm text-slate-500 font-semibold leading-relaxed">
               We stand for 100% data integrity, secure document transfer, zero upfront commissions, and finding the absolute lowest possible rate matching the borrower&apos;s unique credit rating.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Leadership */}
-      <section className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-6 md:px-8 flex flex-col gap-12">
-          <div className="text-center flex flex-col gap-3">
-            <span className="text-xs font-extrabold uppercase tracking-widest text-[#00A86B] font-poppins">Advisory Board</span>
-            <h2 className="text-2xl md:text-3xl font-black text-slate-800 font-poppins">Our Leadership Team</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {leadership.map((lead, idx) => (
-              <div key={idx} className="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 shadow-xs flex flex-col gap-4 hover-lift">
-                <Image
-                  src={lead.img}
-                  alt={lead.name}
-                  width={64}
-                  height={64}
-                  className="w-16 h-16 rounded-2xl object-cover shadow-sm bg-slate-100"
-                />
-                <div className="flex flex-col gap-1">
-                  <span className="text-base font-bold text-slate-800 font-poppins">{lead.name}</span>
-                  <span className="text-[10px] text-[#0B4F9C] font-bold uppercase tracking-widest">{lead.role}</span>
-                </div>
-                <p className="text-xs text-slate-500 leading-relaxed font-semibold">
-                  {lead.desc}
-                </p>
-              </div>
-            ))}
           </div>
         </div>
       </section>

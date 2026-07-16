@@ -5,10 +5,15 @@ import { ArrowLeft, User, Calendar, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { dbService } from '@/lib/dbService';
 
-export const revalidate = 0; // Fresh CMS fetch
-
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateStaticParams() {
+  const posts = await dbService.getBlogs();
+  return posts.map((post) => ({
+    slug: post.slug,
+  }));
 }
 
 export async function generateMetadata({ params }: Props) {

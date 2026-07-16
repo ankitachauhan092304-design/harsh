@@ -143,7 +143,7 @@ export function buildEnquiryMessage(lead: EnquiryLeadData): string {
 💰 Monthly Income: ${formatCurrency(lead.monthlyIncome || 0)}`;
   }
 
-  const message = `🏢 *Whitestone Fincorp — Loan Enquiry*
+  const message = `🏢 *WHITESTONE FINCORP — Loan Enquiry*
 ${'─'.repeat(35)}
 
 📋 *Lead Reference:* ${sanitize(lead.leadNumber)}
@@ -161,7 +161,7 @@ ${serviceSection}
 ${sanitize(lead.remarks || 'No additional remarks.')}
 
 📅 *Submitted:* ${date}
-🌐 *Source:* Whitestone Fincorp Website
+🌐 *Source:* WHITESTONE FINCORP Website
 
 ${'─'.repeat(35)}
 _Please respond with your best offer._`;
@@ -182,7 +182,7 @@ export interface FollowUpData {
 export function buildFollowUpMessage(data: FollowUpData): string {
   const message = `Hello ${sanitize(data.customerName)},
 
-This is ${sanitize(data.executiveName || 'your advisor')} from *Whitestone Fincorp* 🏢
+This is ${sanitize(data.executiveName || 'your advisor')} from *WHITESTONE FINCORP* 🏢
 
 We have received your loan enquiry.
 
@@ -192,9 +192,9 @@ Our team is currently reviewing your application and will get back to you with t
 
 Feel free to reply to this message if you have any questions or need to update any details.
 
-Thank you for trusting Whitestone Fincorp! 🙏
+Thank you for trusting WHITESTONE FINCORP! 🙏
 
-_This is a service message from Whitestone Fincorp._`;
+_This is a service message from WHITESTONE FINCORP._`;
 
   return message;
 }
@@ -213,7 +213,7 @@ export interface EMIShareData {
 }
 
 export function buildEMIShareMessage(data: EMIShareData): string {
-  const message = `📊 *EMI Calculation — Whitestone Fincorp*
+  const message = `📊 *EMI Calculation — WHITESTONE FINCORP*
 ${'─'.repeat(35)}
 
 💵 *Loan Amount:* ${formatCurrency(data.loanAmount)}
@@ -229,7 +229,7 @@ ${'─'.repeat(35)}
 ${'─'.repeat(35)}
 I'd like to discuss loan options for this amount. Can you help me find the best offer?
 
-_Calculated via Whitestone Fincorp EMI Calculator_`;
+_Calculated via WHITESTONE FINCORP EMI Calculator_`;
 
   return message;
 }
@@ -241,7 +241,7 @@ export interface CreditScoreShareData {
 }
 
 export function buildCreditScoreShareMessage(data: CreditScoreShareData): string {
-  const message = `📊 *Credit Score Estimate — Whitestone Fincorp*
+  const message = `📊 *Credit Score Estimate — WHITESTONE FINCORP*
 ${'─'.repeat(35)}
 
 🎯 *Estimated Score:* ${data.estimatedScore}
@@ -251,7 +251,7 @@ ${'─'.repeat(35)}
 ${'─'.repeat(35)}
 I'd like to discuss loan options based on my credit profile. Can you guide me?
 
-_Estimated via Whitestone Fincorp Credit Score Tool_`;
+_Estimated via WHITESTONE FINCORP Credit Score Tool_`;
 
   return message;
 }
@@ -265,7 +265,7 @@ export interface EligibilityShareData {
 }
 
 export function buildEligibilityShareMessage(data: EligibilityShareData): string {
-  const message = `📊 *Loan Eligibility — Whitestone Fincorp*
+  const message = `📊 *Loan Eligibility — WHITESTONE FINCORP*
 ${'─'.repeat(35)}
 
 💰 *Monthly Income:* ${formatCurrency(data.monthlyIncome)}
@@ -280,7 +280,7 @@ ${'─'.repeat(35)}
 ${'─'.repeat(35)}
 I'd like to apply for a loan. Can your team assist me?
 
-_Calculated via Whitestone Fincorp Eligibility Checker_`;
+_Calculated via WHITESTONE FINCORP Eligibility Checker_`;
 
   return message;
 }
