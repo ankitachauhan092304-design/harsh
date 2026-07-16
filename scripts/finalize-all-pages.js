@@ -111,9 +111,15 @@ for (const filePath of htmlFiles) {
   }
 
   // 1b. Inject wf-calculators.js before </body> (if range input/calculator page exists and not already injected)
-  if ((html.includes('type="range"') || rel.includes('calculators/') || rel === 'index.html') && !html.includes('wf-calculators.js')) {
+  if ((html.includes('type="range"') || rel.includes('calculators/') || rel === 'index.html') && !html.includes('wf-calculators.js') && !rel.includes('credit-score')) {
     const calcScript = `<script src="${pfx}_next/static/chunks/wf-calculators.js"></script>`;
     html = html.replace('</body>', calcScript + '\n</body>');
+  }
+
+  // 1c. Inject credit-score.js into credit-score.html
+  if (rel.includes('credit-score.html') && !html.includes('wf-credit-score.js')) {
+    const creditScript = `<script src="${pfx}_next/static/chunks/wf-credit-score.js"></script>`;
+    html = html.replace('</body>', creditScript + '\n</body>');
   }
 
   // 2. Inject counter script for index.html

@@ -6,6 +6,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { buildEMIShareMessage, buildWhatsAppUrl, DEFAULT_WA_NUMBER } from '@/lib/whatsapp';
+import { CALCULATOR_CONFIG } from '@/config/calculator.config';
 
 interface AmortizationRow {
   year: number;
@@ -15,36 +16,10 @@ interface AmortizationRow {
   balance: number;
 }
 
-const LOAN_AMOUNTS = [
-  100000,     // 1 Lakh
-  200000,     // 2 Lakhs
-  500000,     // 5 Lakhs
-  1000000,    // 10 Lakhs
-  2500000,    // 25 Lakhs
-  5000000,    // 50 Lakhs
-  10000000,   // 1 Crore
-  20000000,   // 2 Crores
-  50000000,   // 5 Crores
-  100000000   // 10 Crores
-];
-
-const getSliderIndex = (val: number) => {
-  let closestIdx = 0;
-  let minDiff = Infinity;
-  for (let i = 0; i < LOAN_AMOUNTS.length; i++) {
-    const diff = Math.abs(LOAN_AMOUNTS[i] - val);
-    if (diff < minDiff) {
-      minDiff = diff;
-      closestIdx = i;
-    }
-  }
-  return closestIdx;
-};
-
 export default function EMICalculator() {
-  const [amount, setAmount] = useState<number>(2500000);
-  const [interestRate, setInterestRate] = useState<number>(8.5);
-  const [tenure, setTenure] = useState<number>(20); // in years
+  const [amount, setAmount] = useState<number>(CALCULATOR_CONFIG.EMI.LOAN_AMOUNT.DEFAULT);
+  const [interestRate, setInterestRate] = useState<number>(CALCULATOR_CONFIG.EMI.INTEREST_RATE.DEFAULT);
+  const [tenure, setTenure] = useState<number>(CALCULATOR_CONFIG.EMI.TENURE_YEARS.DEFAULT); // in years
   const [copied, setCopied] = useState<boolean>(false);
 
   // Calculate EMI & Amortization directly during rendering
@@ -192,7 +167,7 @@ export default function EMICalculator() {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 rounded-[40px] bg-gradient-to-br from-slate-50 via-blue-50/20 to-white border border-white shadow-2xl shadow-blue-900/5">
+    <div className="emi-calculator p-4 md:p-6 lg:p-8 rounded-[40px] bg-gradient-to-br from-slate-50 via-blue-50/20 to-white border border-white shadow-2xl shadow-blue-900/5">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Sliders Input */}
         <div className="lg:col-span-7 bg-white/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white shadow-xl shadow-slate-200/50 flex flex-col gap-8 relative overflow-hidden">
@@ -221,6 +196,7 @@ export default function EMICalculator() {
               <IndianRupee size={14} />
               <input
                 type="number"
+                id="loanAmountInput"
                 value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
                 className="w-24 bg-transparent text-right outline-none"
@@ -229,11 +205,12 @@ export default function EMICalculator() {
           </div>
           <input
             type="range"
-            min="0"
-            max={LOAN_AMOUNTS.length - 1}
-            step="1"
-            value={getSliderIndex(amount)}
-            onChange={(e) => setAmount(LOAN_AMOUNTS[Number(e.target.value)])}
+            id="loanAmount"
+            min={CALCULATOR_CONFIG.EMI.LOAN_AMOUNT.MIN}
+            max={CALCULATOR_CONFIG.EMI.LOAN_AMOUNT.MAX}
+            step={CALCULATOR_CONFIG.EMI.LOAN_AMOUNT.STEP}
+            value={amount}
+            onChange={(e) => setAmount(Number(e.target.value))}
             className="w-full accent-[#0B4F9C] cursor-pointer h-2 bg-slate-100 rounded-lg appearance-none"
           />
           <div className="flex justify-between text-[10px] text-slate-400 font-semibold font-dmsans">
@@ -250,6 +227,7 @@ export default function EMICalculator() {
             <div className="flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-xl px-3 py-1 text-sm font-bold text-[#0B4F9C] font-dmsans">
               <input
                 type="number"
+                id="interestRateInput"
                 step="0.1"
                 value={interestRate}
                 onChange={(e) => setInterestRate(Number(e.target.value))}
@@ -260,17 +238,17 @@ export default function EMICalculator() {
           </div>
           <input
             type="range"
-            min="5"
-            max="25"
-            step="0.1"
+            id="interestRate"
+            min={CALCULATOR_CONFIG.EMI.INTEREST_RATE.MIN}
+            max={CALCULATOR_CONFIG.EMI.INTEREST_RATE.MAX}
+            step={CALCULATOR_CONFIG.EMI.INTEREST_RATE.STEP}
             value={interestRate}
             onChange={(e) => setInterestRate(Number(e.target.value))}
             className="w-full accent-[#0B4F9C] cursor-pointer h-2 bg-slate-100 rounded-lg appearance-none"
           />
           <div className="flex justify-between text-[10px] text-slate-400 font-semibold font-dmsans">
-            <span>5% p.a.</span>
-            <span>15% p.a.</span>
-            <span>25% p.a.</span>
+            <span>{CALCULATOR_CONFIG.EMI.INTEREST_RATE.MIN}%</span>
+            <span>{CALCULATOR_CONFIG.EMI.INTEREST_RATE.MAX}%</span>
           </div>
         </div>
 
@@ -281,26 +259,28 @@ export default function EMICalculator() {
             <div className="flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-xl px-3 py-1 text-sm font-bold text-[#0B4F9C] font-dmsans">
               <input
                 type="number"
+                id="loanTenureInput"
+                step={CALCULATOR_CONFIG.EMI.TENURE_YEARS.STEP}
                 value={tenure}
                 onChange={(e) => setTenure(Number(e.target.value))}
-                className="w-10 bg-transparent text-right outline-none"
+                className="w-16 bg-transparent text-right outline-none"
               />
               <span>Years</span>
             </div>
           </div>
           <input
             type="range"
-            min="1"
-            max="30"
-            step="1"
+            id="loanTenure"
+            min={CALCULATOR_CONFIG.EMI.TENURE_YEARS.MIN}
+            max={CALCULATOR_CONFIG.EMI.TENURE_YEARS.MAX}
+            step={CALCULATOR_CONFIG.EMI.TENURE_YEARS.STEP}
             value={tenure}
             onChange={(e) => setTenure(Number(e.target.value))}
             className="w-full accent-[#0B4F9C] cursor-pointer h-2 bg-slate-100 rounded-lg appearance-none"
           />
           <div className="flex justify-between text-[10px] text-slate-400 font-semibold font-dmsans">
-            <span>1 YEAR</span>
-            <span>15 YEARS</span>
-            <span>30 YEARS</span>
+            <span>{CALCULATOR_CONFIG.EMI.TENURE_YEARS.MIN} Yr</span>
+            <span>{CALCULATOR_CONFIG.EMI.TENURE_YEARS.MAX} Yrs</span>
           </div>
         </div>
 
@@ -349,13 +329,13 @@ export default function EMICalculator() {
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col p-4 bg-slate-50 rounded-2xl border border-slate-100/50">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Monthly EMI</span>
-              <span className="text-lg font-bold text-[#0B4F9C] font-dmsans mt-1">
+              <span className="text-lg font-bold text-[#0B4F9C] font-dmsans mt-1" id="emiValue">
                 ₹{Math.round(monthlyEmi).toLocaleString()}
               </span>
             </div>
             <div className="flex flex-col p-4 bg-slate-50 rounded-2xl border border-slate-100/50">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Interest</span>
-              <span className="text-lg font-bold text-[#00A86B] font-dmsans mt-1">
+              <span className="text-lg font-bold text-[#00A86B] font-dmsans mt-1" id="totalInterestValue">
                 ₹{Math.round(totalInterest).toLocaleString()}
               </span>
             </div>
@@ -363,7 +343,7 @@ export default function EMICalculator() {
 
           <div className="flex flex-col p-4 bg-blue-50/50 rounded-2xl border border-blue-100/50 text-center">
             <span className="text-xs font-semibold text-slate-500">Total Payments (Principal + Interest)</span>
-            <span className="text-2xl font-black text-[#0B4F9C] font-dmsans mt-1">
+            <span className="text-2xl font-black text-[#0B4F9C] font-dmsans mt-1" id="totalPaymentValue">
               ₹{Math.round(totalPayment).toLocaleString()}
             </span>
           </div>

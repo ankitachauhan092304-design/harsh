@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Info, ClipboardList, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calculator, Briefcase, FileText, Share2, Target, CheckCircle2, AlertCircle, Info, ClipboardList, TrendingUp } from 'lucide-react';
 import { buildEligibilityShareMessage, buildWhatsAppUrl, DEFAULT_WA_NUMBER } from '@/lib/whatsapp';
+import { CALCULATOR_CONFIG } from '@/config/calculator.config';
 
 export default function EligibilityCalculator() {
   const [age, setAge] = useState<number>(30);
@@ -81,7 +82,7 @@ export default function EligibilityCalculator() {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 rounded-[40px] bg-gradient-to-br from-slate-50 via-blue-50/20 to-white border border-white shadow-2xl shadow-blue-900/5">
+    <div className="eligibility-calculator p-4 md:p-6 lg:p-8 rounded-[40px] bg-gradient-to-br from-slate-50 via-blue-50/20 to-white border border-white shadow-2xl shadow-blue-900/5">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Input Section */}
         <div className="lg:col-span-7 bg-white/80 backdrop-blur-xl p-6 md:p-8 rounded-3xl border border-white shadow-xl shadow-slate-200/50 flex flex-col gap-6 relative overflow-hidden">
@@ -148,10 +149,11 @@ export default function EligibilityCalculator() {
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center text-sm font-semibold text-slate-500">
             <span>Age</span>
-            <span className="font-bold text-slate-800">{age} Years</span>
+            <span className="font-bold text-slate-800" id="el-age-val">{age} Years</span>
           </div>
           <input
             type="range"
+            id="el-age-input"
             min="18"
             max="65"
             value={age}
@@ -164,13 +166,14 @@ export default function EligibilityCalculator() {
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center text-sm font-semibold text-slate-500">
             <span>Net Monthly Income</span>
-            <span className="font-bold text-slate-800 font-dmsans">₹{income.toLocaleString()}</span>
+            <span className="font-bold text-slate-800 font-dmsans" id="el-income-val">₹{income.toLocaleString()}</span>
           </div>
           <input
             type="range"
-            min="10000"
-            max="1000000"
-            step="5000"
+            min={CALCULATOR_CONFIG.ELIGIBILITY.INCOME.MIN}
+            max={CALCULATOR_CONFIG.ELIGIBILITY.INCOME.MAX}
+            step={CALCULATOR_CONFIG.ELIGIBILITY.INCOME.STEP}
+            id="el-income-input"
             value={income}
             onChange={(e) => setIncome(Number(e.target.value))}
             className="w-full accent-[#0B4F9C] cursor-pointer h-1.5 bg-slate-100 rounded-lg appearance-none"
@@ -181,10 +184,11 @@ export default function EligibilityCalculator() {
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center text-sm font-semibold text-slate-500">
             <span>Existing Monthly EMIs</span>
-            <span className="font-bold text-slate-800 font-dmsans">₹{existingEmi.toLocaleString()}</span>
+            <span className="font-bold text-slate-800 font-dmsans" id="el-emi-val">₹{existingEmi.toLocaleString()}</span>
           </div>
           <input
             type="range"
+            id="el-emi-input"
             min="0"
             max={income}
             step="1000"

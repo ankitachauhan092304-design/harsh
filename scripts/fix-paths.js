@@ -75,6 +75,8 @@ for (const filePath of htmlFiles) {
     '"/favicon.ico"': `"${prefix}favicon.ico"`,
     '"/logo.svg"': `"${prefix}logo.svg"`,
     '"/grid.svg"': `"${prefix}grid.svg"`,
+    '"/contact?type=apply"': `"${prefix}contact.html?type=apply"`,
+    '"/contact?type=eligibility"': `"${prefix}contact.html?type=eligibility"`,
   };
 
   for (const [from, to] of Object.entries(pageMap)) {
