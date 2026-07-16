@@ -154,7 +154,12 @@ for (const filePath of htmlFiles) {
   html = html.replace(/ style="opacity:0"/g, '');
 
   if (html !== original) {
-    fs.writeFileSync(filePath, html, 'utf8');
+    // 3. Remove Next.js React hydration scripts to avoid 404s on GitHub Pages custom domains (since we have vanilla JS fallbacks now)
+  html = html.replace(/<script src="[^"]+\/_next\/static\/chunks\/[a-zA-Z0-9_-]+\.js"[^>]*><\/script>/g, '');
+  html = html.replace(/<link rel="preload" href="[^"]+\/_next\/static\/chunks\/[a-zA-Z0-9_-]+\.js"[^>]*>/g, '');
+  html = html.replace(/<script[^>]*>self\.__next_f.*?(<\/script>)/g, '');
+
+  fs.writeFileSync(filePath, html, 'utf8');
     fixed++;
     console.log(`✅ ${rel}`);
   } else {
