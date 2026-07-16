@@ -154,8 +154,8 @@ for (const filePath of htmlFiles) {
   html = html.replace(/ style="opacity:0"/g, '');
 
   // 3. Remove Next.js React hydration scripts to avoid 404s on GitHub Pages custom domains (since we have vanilla JS fallbacks now)
-  html = html.replace(/<script src="[^"]+\/_next\/static\/chunks\/(?!wf-)[^"]+\.js"[^>]*><\/script>/g, '');
-  html = html.replace(/<link[^>]*rel="preload"[^>]*href="[^"]+\/_next\/static\/chunks\/(?!wf-)[^"]+\.js"[^>]*>/g, '');
+  html = html.replace(/<script src="[^"]*\/_next\/static\/chunks\/(?!wf-)[^"]+\.js"[^>]*><\/script>/g, '');
+  html = html.replace(/<link[^>]*rel="preload"[^>]*href="[^"]*\/_next\/static\/chunks\/(?!wf-)[^"]+\.js"[^>]*>/g, '');
   html = html.replace(/<script[^>]*>(?:(?!<\/script>)[\s\S])*?self\.__next_f(?:(?!<\/script>)[\s\S])*?<\/script>/g, '');
 
   if (html !== original) {
