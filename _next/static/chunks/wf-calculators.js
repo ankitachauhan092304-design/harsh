@@ -23,26 +23,53 @@ document.addEventListener('DOMContentLoaded', () => {
         const emiValueEl = document.getElementById('emiValue');
         const totalInterestEl = document.getElementById('totalInterestValue');
         const totalPaymentEl = document.getElementById('totalPaymentValue');
+        const tbody = emiContainer.querySelector('table tbody');
 
         function calculateEMI() {
-            const principal = parseFloat(amountRange.value);
-            const tenureMonths = parseFloat(tenureRange.value) * 12; // Assuming tenure is in years
-            const annualInterest = parseFloat(interestRange.value);
+            const principal = parseFloat(amountRange.value) || 0;
+            const tenureYears = parseFloat(tenureRange.value) || 0;
+            const tenureMonths = tenureYears * 12; // Assuming tenure is in years
+            const annualInterest = parseFloat(interestRange.value) || 0;
             const monthlyInterest = annualInterest / 12 / 100;
 
             let emi = 0;
-            if (monthlyInterest > 0) {
+            if (monthlyInterest > 0 && tenureMonths > 0) {
                 emi = principal * monthlyInterest * Math.pow(1 + monthlyInterest, tenureMonths) / (Math.pow(1 + monthlyInterest, tenureMonths) - 1);
-            } else {
+            } else if (tenureMonths > 0) {
                 emi = principal / tenureMonths;
             }
 
             const totalPayment = emi * tenureMonths;
-            const totalInterest = totalPayment - principal;
+            const totalInterest = Math.max(0, totalPayment - principal);
 
             if (emiValueEl) emiValueEl.textContent = formatINR(emi);
             if (totalInterestEl) totalInterestEl.textContent = formatINR(totalInterest);
             if (totalPaymentEl) totalPaymentEl.textContent = formatINR(totalPayment);
+
+            // Update Amortization Table in UI
+            if (tbody && tenureYears > 0) {
+                let bal = principal;
+                let rowsHtml = '';
+                for (let year = 1; year <= tenureYears; year++) {
+                    let yearlyInterest = 0;
+                    let yearlyPrincipal = 0;
+                    for (let month = 1; month <= 12; month++) {
+                        const interestPaid = bal * monthlyInterest;
+                        const principalPaid = emi - interestPaid;
+                        yearlyInterest += interestPaid;
+                        yearlyPrincipal += principalPaid;
+                        bal = Math.max(0, bal - principalPaid);
+                    }
+                    rowsHtml += `<tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="py-4 px-6 font-bold text-[#0B4F9C]">Year ${year}</td>
+                        <td class="py-4 px-6 font-dmsans">₹${Math.round(yearlyPrincipal).toLocaleString('en-IN')}</td>
+                        <td class="py-4 px-6 font-dmsans text-[#00A86B]">₹${Math.round(yearlyInterest).toLocaleString('en-IN')}</td>
+                        <td class="py-4 px-6 font-dmsans">₹${Math.round(yearlyPrincipal + yearlyInterest).toLocaleString('en-IN')}</td>
+                        <td class="py-4 px-6 font-dmsans text-slate-400">₹${Math.round(bal).toLocaleString('en-IN')}</td>
+                    </tr>`;
+                }
+                tbody.innerHTML = rowsHtml;
+            }
         }
 
         // Add event listeners if elements exist
@@ -77,6 +104,245 @@ document.addEventListener('DOMContentLoaded', () => {
                 interestRange.value = e.target.value;
                 calculateEMI();
             });
+        }
+
+        // Action Buttons Setup
+        const buttons = Array.from(emiContainer.querySelectorAll('button'));
+        const resetBtn = document.getElementById('emi-reset-btn') || buttons.find(b => b.textContent.includes('Reset'));
+        const pdfBtn = buttons.find(b => b.textContent.includes('Download PDF'));
+        const copyBtn = buttons.find(b => b.textContent.includes('Copy Estimate'));
+        const whatsappBtn = buttons.find(b => b.textContent.includes('Discuss on WhatsApp') || b.textContent.includes('WhatsApp'));
+        const shareBtn = buttons.find(b => b.title === 'Share Estimate' || b.getAttribute('aria-label') === 'Share Estimate');
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                amountRange.value = 100000;
+                amountNumber.value = 100000;
+                interestRange.value = 8.5;
+                interestNumber.value = 8.5;
+                tenureRange.value = 20;
+                tenureNumber.value = 20;
+                calculateEMI();
+            });
+        }
+
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                const principal = parseFloat(amountRange.value) || 0;
+                const tenureYears = parseFloat(tenureRange.value) || 0;
+                const interest = parseFloat(interestRange.value) || 0;
+                const tenureMonths = tenureYears * 12;
+                const monthlyInterest = interest / 12 / 100;
+                let emi = 0;
+                if (monthlyInterest > 0 && tenureMonths > 0) {
+                    emi = principal * monthlyInterest * Math.pow(1 + monthlyInterest, tenureMonths) / (Math.pow(1 + monthlyInterest, tenureMonths) - 1);
+                } else if (tenureMonths > 0) {
+                    emi = principal / tenureMonths;
+                }
+                const text = `Calculated EMI payout: Rs. ${Math.round(emi).toLocaleString('en-IN')}/mo for a loan of Rs. ${principal.toLocaleString('en-IN')} at ${interest}% interest.`;
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check text-emerald-500"><path d="M20 6 9 17l-5-5"/></svg> Copied`;
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                    }, 2000);
+                });
+            });
+        }
+
+        if (whatsappBtn) {
+            whatsappBtn.addEventListener('click', () => {
+                const principal = parseFloat(amountRange.value) || 0;
+                const tenureYears = parseFloat(tenureRange.value) || 0;
+                const interest = parseFloat(interestRange.value) || 0;
+                const tenureMonths = tenureYears * 12;
+                const monthlyInterest = interest / 12 / 100;
+                let emi = 0;
+                if (monthlyInterest > 0 && tenureMonths > 0) {
+                    emi = principal * monthlyInterest * Math.pow(1 + monthlyInterest, tenureMonths) / (Math.pow(1 + monthlyInterest, tenureMonths) - 1);
+                } else if (tenureMonths > 0) {
+                    emi = principal / tenureMonths;
+                }
+                const totalPayment = emi * tenureMonths;
+                const totalInterest = Math.max(0, totalPayment - principal);
+
+                const msg = `*Whitestone Fincorp - EMI Estimate*\n\n` +
+                            `• Loan Principal: Rs. ${principal.toLocaleString('en-IN')}\n` +
+                            `• Interest Rate: ${interest}% p.a.\n` +
+                            `• Selected Tenure: ${tenureYears} Years (${tenureMonths} Months)\n\n` +
+                            `*Calculated Outputs:*\n` +
+                            `• Monthly EMI: Rs. ${Math.round(emi).toLocaleString('en-IN')}/month\n` +
+                            `• Total Interest: Rs. ${Math.round(totalInterest).toLocaleString('en-IN')}\n` +
+                            `• Total Cumulative Payment: Rs. ${Math.round(totalPayment).toLocaleString('en-IN')}\n\n` +
+                            `_Estimate generated via Whitestone Fincorp Interactive Utilities._`;
+                
+                window.open(`https://wa.me/919824975488?text=${encodeURIComponent(msg)}`, '_blank');
+            });
+        }
+
+        if (shareBtn) {
+            shareBtn.addEventListener('click', () => {
+                const principal = parseFloat(amountRange.value) || 0;
+                const tenureYears = parseFloat(tenureRange.value) || 0;
+                const interest = parseFloat(interestRange.value) || 0;
+                const tenureMonths = tenureYears * 12;
+                const monthlyInterest = interest / 12 / 100;
+                let emi = 0;
+                if (monthlyInterest > 0 && tenureMonths > 0) {
+                    emi = principal * monthlyInterest * Math.pow(1 + monthlyInterest, tenureMonths) / (Math.pow(1 + monthlyInterest, tenureMonths) - 1);
+                } else if (tenureMonths > 0) {
+                    emi = principal / tenureMonths;
+                }
+                const text = `Calculated EMI payout: Rs. ${Math.round(emi).toLocaleString('en-IN')}/mo for a loan of Rs. ${principal.toLocaleString('en-IN')} at ${interest}% interest.`;
+                const shareData = {
+                    title: 'Whitestone Fincorp EMI Estimate',
+                    text: text,
+                    url: window.location.href
+                };
+                if (navigator.share) {
+                    navigator.share(shareData).catch(() => {});
+                } else {
+                    navigator.clipboard.writeText(text).then(() => {
+                        alert('Link & Estimate copied to clipboard!');
+                    });
+                }
+            });
+        }
+
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = resolve;
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+        }
+
+        async function generatePDF() {
+            if (!window.jspdf) {
+                const originalText = pdfBtn.innerHTML;
+                pdfBtn.innerHTML = 'Loading PDF Library...';
+                try {
+                    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+                    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js');
+                } catch (e) {
+                    alert('Failed to load PDF library. Please check your internet connection.');
+                    pdfBtn.innerHTML = originalText;
+                    return;
+                }
+                pdfBtn.innerHTML = originalText;
+            }
+
+            const principal = parseFloat(amountRange.value) || 0;
+            const tenureYears = parseFloat(tenureRange.value) || 0;
+            const interest = parseFloat(interestRange.value) || 0;
+            const tenureMonths = tenureYears * 12;
+            const monthlyInterest = interest / 12 / 100;
+            let emi = 0;
+            if (monthlyInterest > 0 && tenureMonths > 0) {
+                emi = principal * monthlyInterest * Math.pow(1 + monthlyInterest, tenureMonths) / (Math.pow(1 + monthlyInterest, tenureMonths) - 1);
+            } else if (tenureMonths > 0) {
+                emi = principal / tenureMonths;
+            }
+            const totalPayment = emi * tenureMonths;
+            const totalInterest = Math.max(0, totalPayment - principal);
+
+            // Generate Amortization schedule (Year-wise)
+            let balance = principal;
+            const amortization = [];
+            for (let year = 1; year <= tenureYears; year++) {
+                let yearlyInterest = 0;
+                let yearlyPrincipal = 0;
+                for (let month = 1; month <= 12; month++) {
+                    const interestPaid = balance * monthlyInterest;
+                    const principalPaid = emi - interestPaid;
+                    yearlyInterest += interestPaid;
+                    yearlyPrincipal += principalPaid;
+                    balance = Math.max(0, balance - principalPaid);
+                }
+                amortization.push({
+                    year,
+                    principal: yearlyPrincipal,
+                    interest: yearlyInterest,
+                    totalPayment: yearlyPrincipal + yearlyInterest,
+                    balance
+                });
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Header styling
+            doc.setFillColor(11, 79, 156); // Primary blue
+            doc.rect(0, 0, 210, 40, 'F');
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(22);
+            doc.text('Whitestone Fincorp', 20, 20);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text('Premium Loan Facilitation & Consulting', 20, 30);
+            doc.text(`Report Generated: ${new Date().toLocaleDateString()}`, 150, 25);
+
+            // Loan Summary Box
+            doc.setFillColor(248, 250, 252);
+            doc.rect(20, 50, 170, 45, 'F');
+            doc.setDrawColor(226, 232, 240);
+            doc.rect(20, 50, 170, 45);
+
+            doc.setTextColor(30, 41, 59);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('LOAN SUMMARY REPORT', 25, 58);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text(`Requested Loan Principal: Rs. ${Math.round(principal).toLocaleString('en-IN')}`, 25, 68);
+            doc.text(`Applicable Interest Rate: ${interest}% p.a.`, 25, 74);
+            doc.text(`Total Tenure Selected: ${tenureYears} Years (${tenureMonths} Months)`, 25, 80);
+            doc.text(`Monthly Installment (EMI): Rs. ${Math.round(emi).toLocaleString('en-IN')}`, 25, 86);
+
+            doc.text(`Total Interest Payable: Rs. ${Math.round(totalInterest).toLocaleString('en-IN')}`, 115, 68);
+            doc.text(`Total Cumulative Payment: Rs. ${Math.round(totalPayment).toLocaleString('en-IN')}`, 115, 74);
+
+            // Amortization Table Title
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('ANNUAL AMORTIZATION SCHEDULE', 20, 110);
+
+            const tableRows = amortization.map((row) => [
+                `Year ${row.year}`,
+                `Rs. ${Math.round(row.principal).toLocaleString('en-IN')}`,
+                `Rs. ${Math.round(row.interest).toLocaleString('en-IN')}`,
+                `Rs. ${Math.round(row.totalPayment).toLocaleString('en-IN')}`,
+                `Rs. ${Math.round(row.balance).toLocaleString('en-IN')}`,
+            ]);
+
+            doc.autoTable({
+                startY: 115,
+                head: [['Year', 'Principal Paid', 'Interest Paid', 'Total Annual Outflow', 'Outstanding Balance']],
+                body: tableRows,
+                theme: 'striped',
+                headStyles: { fillColor: [11, 79, 156] },
+                styles: { fontSize: 9 },
+            });
+
+            // Disclaimer
+            const finalY = doc.lastAutoTable.finalY + 15;
+            doc.setFont('helvetica', 'oblique');
+            doc.setFontSize(8);
+            doc.setTextColor(148, 163, 184);
+            const disclaimer = 'Disclaimer: This report is for illustration purposes only. Actual interest rates, processing fees, and terms of credit are determined solely by our partner financial institutions upon document audit. Whitestone Fincorp is a consulting facilitator and does not underwrite loans directly.';
+            doc.text(disclaimer, 20, finalY, { maxWidth: 170 });
+
+            doc.save(`Whitestone_EMI_Report_${Math.round(principal)}.pdf`);
+        }
+
+        if (pdfBtn) {
+            pdfBtn.addEventListener('click', generatePDF);
         }
         
         // Initial Calculation
