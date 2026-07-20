@@ -4,7 +4,7 @@ export const CALCULATOR_CONFIG = {
       MIN: 100000,
       MAX: 100000000,
       STEP: 100000,
-      DEFAULT: 2500000
+      DEFAULT: 100000
     },
     INTEREST_RATE: {
       MIN: 5,

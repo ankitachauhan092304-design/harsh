@@ -132,7 +132,7 @@ for (const filePath of htmlFiles) {
       { val: 5, suffix: '+' },
     ];
     let idx = 0;
-    html = html.replace(/<span class="tabular-nums">([^<]*)<\/span>/g, (match, inner) => {
+    html = html.replace(/<span class="tabular-nums">([\s\S]*?)<\/span>/g, (match, inner) => {
       if (idx >= counters.length) return match;
       const { val, suffix } = counters[idx++];
       return `<span class="tabular-nums wf-counter" data-target="${val}" data-suffix="${suffix}">${val}${suffix}</span>`;

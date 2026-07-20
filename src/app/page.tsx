@@ -383,11 +383,11 @@ export default function HomePage() {
                   case 'business-loan':
                     return { processing: '48 Hours', eligibility: 'Turnover Based' };
                   case 'home-loan':
-                    return { processing: '3-5 Days', eligibility: 'Salary ≥ ₹15K/mo' };
+                    return { processing: '10–15 Days', eligibility: 'Salary ≥ ₹15K/mo' };
                   case 'loan-against-property':
-                    return { processing: '5-7 Days', eligibility: 'Property Collateral' };
+                    return { processing: '10–12 Days', eligibility: 'Property Collateral' };
                   case 'project-loan':
-                    return { processing: '7-10 Days', eligibility: 'Project Profile Based' };
+                    return { processing: '15–30 Days', eligibility: 'Project Profile Based' };
                   case 'top-up-loan':
                     return { processing: '48 Hours', eligibility: 'Active Loan Track' };
                   default:

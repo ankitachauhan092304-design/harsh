@@ -84,7 +84,7 @@ export default function EMICalculator() {
   };
 
   const resetCalculator = () => {
-    setAmount(2500000);
+    setAmount(100000);
     setInterestRate(8.5);
     setTenure(20);
   };
@@ -180,6 +180,7 @@ export default function EMICalculator() {
             <h3 className="text-lg font-bold text-slate-800 font-poppins">EMI Calculator</h3>
           </div>
           <button
+            id="emi-reset-btn"
             onClick={resetCalculator}
             className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-1 text-xs font-semibold"
           >
