@@ -84,6 +84,9 @@ for (const filePath of htmlFiles) {
     content = content.replaceAll(`src=${from}`, `src=${to}`);
   }
 
+  // Fix absolute favicon URLs with query strings
+  content = content.replace(/href="\/favicon\.ico\?[^"]*"/g, `href="${prefix}favicon.ico"`);
+
   // Fix contact?type=apply link
   content = content.replace(/href="\.\/contact\?type=apply\.html"/g, `href="${prefix}contact.html"`);
   content = content.replace(/href="\.\.\/contact\?type=apply\.html"/g, `href="${prefix}contact.html"`);
