@@ -27,9 +27,9 @@ const dmsans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Whitestone Fincorp | Premium Loan Facilitator & Consultation Services',
-  description: 'Whitestone Fincorp provides unsecured and secured loan facilitation, consultation, and comparing rates across India\'s top banking partners. Apply for Personal, Business, Home Loans, and LAP.',
-  keywords: 'loan facilitation, loan consultation, personal loan, business loan, home loan, loan against property, credit score check, EMI calculator, fintech, Whitestone Fincorp',
+  title: 'Whitestone Fincorp | Premium Loan Facilitator & Financial Consultant Gujarat',
+  description: 'Whitestone Fincorp is the leading loan advisor and financial consultant in Gujarat. We facilitate Personal, Business, Home, Project Loans, and LAP at premium rates.',
+  keywords: 'Personal Loan Gujarat, Business Loan Gujarat, Home Loan Gujarat, Loan Against Property Gujarat, Project Loan Gujarat, Financial Consultant Gujarat, Loan Advisor Gujarat, Whitestone Fincorp',
   metadataBase: new URL('https://whitestonefincorp.com'),
   alternates: {
     canonical: '/',
@@ -66,39 +66,78 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Schema.org JSON-LD for local business/financial service
+  // Schema.org JSON-LD graph representing connected LocalBusiness, FinancialService, and Organization
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'FinancialService',
-    'name': 'Whitestone Fincorp',
-    'image': 'https://whitestonefincorp.com/og-image.jpg',
-    '@id': 'https://whitestonefincorp.com/#corporate',
-    'url': 'https://whitestonefincorp.com',
-    'telephone': '+91-98249-75488',
-    'priceRange': '$$',
-    'address': {
-      '@type': 'PostalAddress',
-      'streetAddress': '207/21 WHITESTONE FINCORP, Opp. ADC Bank, RAKHIAL',
-      'addressLocality': 'Ahmedabad',
-      'postalCode': '380023',
-      'addressCountry': 'IN',
-    },
-    'openingHoursSpecification': {
-      '@type': 'OpeningHoursSpecification',
-      'dayOfWeek': [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
-      ],
-      'opens': '10:00',
-      'closes': '19:00'
-    },
-    'sameAs': [
-      'https://facebook.com/whitestonefincorp',
-      'https://linkedin.com/company/whitestonefincorp'
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': 'https://whitestonefincorp.com/#organization',
+        'name': 'Whitestone Fincorp',
+        'url': 'https://whitestonefincorp.com',
+        'logo': {
+          '@type': 'ImageObject',
+          'url': 'https://whitestonefincorp.com/logo.svg',
+          'caption': 'Whitestone Fincorp Logo'
+        },
+        'sameAs': [
+          'https://facebook.com/whitestonefincorp',
+          'https://linkedin.com/company/whitestonefincorp',
+          'https://twitter.com/whitestonefincorp',
+          'https://instagram.com/whitestonefincorp'
+        ]
+      },
+      {
+        '@type': ['FinancialService', 'LocalBusiness'],
+        '@id': 'https://whitestonefincorp.com/#corporate',
+        'name': 'Whitestone Fincorp',
+        'image': 'https://whitestonefincorp.com/og-image.jpg',
+        'url': 'https://whitestonefincorp.com',
+        'telephone': '+91-98249-75488',
+        'email': 'info@whitestonefincorp.com',
+        'priceRange': '$$',
+        'address': {
+          '@type': 'PostalAddress',
+          'streetAddress': '207/21 WHITESTONE FINCORP, Opp. ADC Bank, RAKHIAL',
+          'addressLocality': 'Ahmedabad',
+          'addressRegion': 'Gujarat',
+          'postalCode': '380023',
+          'addressCountry': 'IN'
+        },
+        'geo': {
+          '@type': 'GeoCoordinates',
+          'latitude': 23.0246,
+          'longitude': 72.6175
+        },
+        'areaServed': {
+          '@type': 'State',
+          'name': 'Gujarat'
+        },
+        'hasMap': 'https://maps.google.com/?q=Whitestone+Fincorp+Opp.+ADC+Bank,+Rakhial,+Ahmedabad',
+        'openingHoursSpecification': {
+          '@type': 'OpeningHoursSpecification',
+          'dayOfWeek': [
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday'
+          ],
+          'opens': '10:00',
+          'closes': '19:00'
+        },
+        'sameAs': [
+          'https://facebook.com/whitestonefincorp',
+          'https://linkedin.com/company/whitestonefincorp',
+          'https://twitter.com/whitestonefincorp',
+          'https://instagram.com/whitestonefincorp',
+          'https://maps.google.com/?q=Whitestone+Fincorp+Opp.+ADC+Bank,+Rakhial,+Ahmedabad'
+        ],
+        'parentOrganization': {
+          '@id': 'https://whitestonefincorp.com/#organization'
+        }
+      }
     ]
   };
 
@@ -109,6 +148,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <meta name="google-site-verification" content="placeholder_google_verification_code" />
+        <meta name="msvalidate.01" content="placeholder_bing_verification_code" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

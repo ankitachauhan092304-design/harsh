@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, FileText, HelpCircle, ArrowRight } from 'lucide-react';
 import ContactForm from '@/components/ContactForm';
+import type { Metadata } from 'next';
 
 // Product configurations
 const PRODUCT_DATA: Record<string, {
@@ -281,6 +282,24 @@ const PRODUCT_DATA: Record<string, {
 
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
+  const slug = params.slug;
+  const product = PRODUCT_DATA[slug];
+  if (!product) return {};
+
+  const name = product.name;
+  return {
+    title: `${name} Gujarat | Premium Loan Advisor - Whitestone Fincorp`,
+    description: `Compare and apply for a ${name} in Gujarat with Whitestone Fincorp. Get customized interest rates, simple documentation, and fast approvals from India's top banking partners.`,
+    keywords: `${name} Gujarat, ${name} Ahmedabad, ${name} advisor Gujarat, ${name} consultant, Whitestone Fincorp`,
+  };
 }
 
 export function generateStaticParams() {
