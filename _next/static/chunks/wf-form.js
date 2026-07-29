@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const contactForm = document.getElementById('contactForm') || document.querySelector('form');
     if (!contactForm) return;
 
-    // Add hidden honeypot field dynamically to prevent spam bots
+    // Honeypot field for spam prevention
     if (!contactForm.querySelector('input[name="honeypot"]')) {
         const honeypot = document.createElement('input');
         honeypot.type = 'text';
@@ -53,16 +53,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const consentCheck = contactForm.querySelector('input[type="checkbox"]');
     const submitBtn = contactForm.querySelector('button[type="submit"]') || contactForm.querySelector('button');
 
-    // Helper: Show Inline Error
-    function setError(inputEl, msg) {
+    // Touched state tracking for each field
+    const touched = {
+        name: false,
+        phone: false,
+        email: false,
+        city: false,
+        loanAmount: false,
+        consent: false,
+    };
+
+    // Helper: Set/Clear Inline Error - Only displays error UI if touched[fieldName] is true!
+    function setError(inputEl, msg, fieldName) {
         if (!inputEl) return;
         let parent = inputEl.closest('.flex-col') || inputEl.parentElement;
         let errorEl = parent.querySelector('.wf-inline-error');
+        
         if (!errorEl) {
             errorEl = document.createElement('span');
             errorEl.className = 'wf-inline-error text-[10px] font-semibold text-rose-500 flex items-center gap-1 mt-0.5';
             parent.appendChild(errorEl);
         }
+
+        // Do NOT display error UI if field is untouched!
+        if (fieldName && !touched[fieldName]) {
+            errorEl.textContent = '';
+            inputEl.classList.remove('border-rose-400', 'bg-rose-50/20', 'border-emerald-400');
+            return;
+        }
+
         if (msg) {
             errorEl.textContent = msg;
             inputEl.classList.add('border-rose-400', 'bg-rose-50/20');
@@ -80,48 +99,45 @@ document.addEventListener('DOMContentLoaded', () => {
     function validateName() {
         if (!nameInput) return true;
         const val = nameInput.value.trim().replace(/\s+/g, ' ');
-        nameInput.value = val;
         if (!val) {
-            setError(nameInput, 'Full name is required.');
+            setError(nameInput, 'Full name is required.', 'name');
             return false;
         }
         if (val.length < 2 || val.length > 60 || !/^[a-zA-Z\s\.\-']+$/.test(val)) {
-            setError(nameInput, 'Please enter a valid full name.');
+            setError(nameInput, 'Please enter a valid full name.', 'name');
             return false;
         }
-        setError(nameInput, '');
+        setError(nameInput, '', 'name');
         return true;
     }
 
     function validatePhone() {
         if (!phoneInput) return true;
         const digits = phoneInput.value.replace(/\D/g, '');
-        phoneInput.value = digits;
         if (!digits) {
-            setError(phoneInput, 'Mobile number is required.');
+            setError(phoneInput, 'Mobile number is required.', 'phone');
             return false;
         }
         if (digits.length !== 10 || !/^[6-9]\d{9}$/.test(digits)) {
-            setError(phoneInput, 'Enter a valid 10-digit mobile number.');
+            setError(phoneInput, 'Enter a valid 10-digit mobile number.', 'phone');
             return false;
         }
-        setError(phoneInput, '');
+        setError(phoneInput, '', 'phone');
         return true;
     }
 
     function validateEmail() {
         if (!emailInput) return true;
         const val = emailInput.value.toLowerCase().trim();
-        emailInput.value = val;
         if (!val) {
-            setError(emailInput, '');
+            setError(emailInput, '', 'email');
             return true; // Optional
         }
         if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val)) {
-            setError(emailInput, 'Enter a valid email address.');
+            setError(emailInput, 'Enter a valid email address.', 'email');
             return false;
         }
-        setError(emailInput, '');
+        setError(emailInput, '', 'email');
         return true;
     }
 
@@ -129,10 +145,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!cityInput) return true;
         const val = cityInput.value.trim();
         if (!val) {
-            setError(cityInput, 'City is required.');
+            setError(cityInput, 'City is required.', 'city');
             return false;
         }
-        setError(cityInput, '');
+        setError(cityInput, '', 'city');
         return true;
     }
 
@@ -140,29 +156,29 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!loanAmountInput) return true;
         const digits = loanAmountInput.value.replace(/\D/g, '');
         if (!digits) {
-            setError(loanAmountInput, 'Loan amount is required.');
+            setError(loanAmountInput, 'Loan amount is required.', 'loanAmount');
             return false;
         }
         const num = Number(digits);
         if (num < 50000) {
-            setError(loanAmountInput, 'Minimum loan amount is ₹50,000.');
+            setError(loanAmountInput, 'Minimum loan amount is ₹50,000.', 'loanAmount');
             return false;
         }
         if (num > 100000000) {
-            setError(loanAmountInput, 'Maximum loan amount is ₹10,00,00,000.');
+            setError(loanAmountInput, 'Maximum loan amount is ₹10,00,00,000.', 'loanAmount');
             return false;
         }
-        setError(loanAmountInput, '');
+        setError(loanAmountInput, '', 'loanAmount');
         return true;
     }
 
     function validateConsent() {
         if (!consentCheck) return true;
         if (!consentCheck.checked) {
-            setError(consentCheck, 'Please provide authorization to proceed.');
+            setError(consentCheck, 'Please provide authorization to proceed.', 'consent');
             return false;
         }
-        setError(consentCheck, '');
+        setError(consentCheck, '', 'consent');
         return true;
     }
 
@@ -176,27 +192,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return v1 && v2 && v3 && v4 && v5 && v6;
     }
 
-    function updateSubmitState() {
-        if (!submitBtn) return;
-        const valid = validateAll();
-        submitBtn.disabled = !valid;
-        if (valid) {
-            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        } else {
-            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        }
-    }
-
-    // Input Restrictions while typing
+    // Input Restrictions & Touch Handlers
     if (nameInput) {
         nameInput.maxLength = 60;
         nameInput.addEventListener('input', (e) => {
             e.target.value = e.target.value.replace(/[^a-zA-Z\s\.\-']/g, '').slice(0, 60);
-            updateSubmitState();
+            if (touched.name) validateName();
         });
         nameInput.addEventListener('blur', () => {
+            touched.name = true;
+            nameInput.value = nameInput.value.trim().replace(/\s+/g, ' ');
             validateName();
-            updateSubmitState();
         });
     }
 
@@ -205,22 +211,22 @@ document.addEventListener('DOMContentLoaded', () => {
         phoneInput.setAttribute('inputmode', 'numeric');
         phoneInput.addEventListener('input', (e) => {
             e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
-            updateSubmitState();
+            if (touched.phone) validatePhone();
         });
         phoneInput.addEventListener('blur', () => {
+            touched.phone = true;
             validatePhone();
-            updateSubmitState();
         });
     }
 
     if (emailInput) {
         emailInput.addEventListener('input', (e) => {
             e.target.value = e.target.value.toLowerCase().replace(/\s/g, '');
-            updateSubmitState();
+            if (touched.email) validateEmail();
         });
         emailInput.addEventListener('blur', () => {
+            touched.email = true;
             validateEmail();
-            updateSubmitState();
         });
     }
 
@@ -229,11 +235,11 @@ document.addEventListener('DOMContentLoaded', () => {
         loanAmountInput.addEventListener('input', (e) => {
             const digits = e.target.value.replace(/\D/g, '');
             e.target.value = digits ? formatIndianCurrency(digits) : '';
-            updateSubmitState();
+            if (touched.loanAmount) validateLoanAmount();
         });
         loanAmountInput.addEventListener('blur', () => {
+            touched.loanAmount = true;
             validateLoanAmount();
-            updateSubmitState();
         });
     }
 
@@ -246,8 +252,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (consentCheck) {
         consentCheck.addEventListener('change', () => {
+            touched.consent = true;
             validateConsent();
-            updateSubmitState();
         });
     }
 
@@ -272,8 +278,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         e.preventDefault();
                         cityInput.value = city;
                         dropdown.classList.add('hidden');
+                        touched.city = true;
                         validateCity();
-                        updateSubmitState();
                     });
                     dropdown.appendChild(item);
                 });
@@ -292,23 +298,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         cityInput.addEventListener('input', (e) => {
             renderCityDropdown(e.target.value.trim());
-            updateSubmitState();
+            if (touched.city) validateCity();
         });
 
         cityInput.addEventListener('blur', () => {
             setTimeout(() => dropdown.classList.add('hidden'), 200);
+            touched.city = true;
             validateCity();
-            updateSubmitState();
         });
     }
-
-    // Initial check on page load
-    updateSubmitState();
 
     // ── Form Submission ─────────────────────────────────────────────────────
     contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        // Mark ALL fields as touched on submit press
+        Object.keys(touched).forEach(key => touched[key] = true);
+
+        // Run validation across all fields & display messages for invalid fields
         if (!validateAll()) {
             return;
         }
@@ -389,6 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = waUrl;
 
         contactForm.reset();
+        Object.keys(touched).forEach(key => touched[key] = false);
         if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalBtnText;
