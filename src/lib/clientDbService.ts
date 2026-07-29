@@ -143,13 +143,22 @@ export const clientDbService = {
   },
 
   async getLeads(): Promise<Lead[]> {
+    let localLeads: Lead[] = [];
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('wf_leads');
+        if (stored) localLeads = JSON.parse(stored);
+      } catch (err) {}
+    }
+
     const targetWebhook = (typeof window !== 'undefined' && localStorage.getItem('wf_google_webhook_url')) || 'https://script.google.com/macros/s/AKfycbyc__n3C9_6t3Vz0y7H8sL78xR1yN2vQ95Z6k0M2o4h9G3F5J1wB3N2/exec';
+    let remoteLeads: Lead[] = [];
     try {
       const res = await fetch(`${targetWebhook}?action=getLeads`, { cache: 'no-store' });
       if (res.ok) {
         const json = await res.json();
         if (json && json.status === 'SUCCESS' && Array.isArray(json.leads)) {
-          return json.leads.map((l: any) => ({
+          remoteLeads = json.leads.map((l: any) => ({
             id: l.id || `lead-${Date.now()}`,
             leadNumber: l.leadNumber,
             name: l.name,
@@ -175,10 +184,13 @@ export const clientDbService = {
           }));
         }
       }
-    } catch (err) {
-      console.warn('Google Sheets fetch error (fallback to local state):', err);
-    }
-    return MOCK_LEADS.filter((l) => !l.isDeleted);
+    } catch (err) {}
+
+    const existingLeadNums = new Set(remoteLeads.map((l) => l.leadNumber));
+    const unmergedLocal = localLeads.filter((l) => !existingLeadNums.has(l.leadNumber));
+    const merged = [...remoteLeads, ...unmergedLocal];
+
+    return merged.filter((l) => !l.isDeleted);
   },
 
   async getLeadById(id: string) {
