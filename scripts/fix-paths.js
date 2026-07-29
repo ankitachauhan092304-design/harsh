@@ -106,4 +106,18 @@ for (const filePath of htmlFiles) {
   }
 }
 
+// Ensure out/admin/index.html exists as a copy of out/admin.html for directory URL routing
+const adminHtmlPath = path.join(OUT_DIR, 'admin.html');
+const adminDir = path.join(OUT_DIR, 'admin');
+if (fs.existsSync(adminHtmlPath)) {
+  if (!fs.existsSync(adminDir)) fs.mkdirSync(adminDir, { recursive: true });
+  let adminContent = fs.readFileSync(adminHtmlPath, 'utf8');
+  // Adjust paths from ./ to ../ for admin/index.html
+  adminContent = adminContent.replace(/href="\.\/_next\//g, 'href="../_next/');
+  adminContent = adminContent.replace(/src="\.\/_next\//g, 'src="../_next/');
+  adminContent = adminContent.replace(/url\(\.\/_next\//g, 'url(../_next/');
+  fs.writeFileSync(path.join(adminDir, 'index.html'), adminContent, 'utf8');
+  console.log('✅ Created out/admin/index.html for directory routing');
+}
+
 console.log(`\n✅ Done! Fixed ${fixed} of ${htmlFiles.length} HTML files.`);
