@@ -142,24 +142,43 @@ export const clientDbService = {
     return null;
   },
 
-  async getLeads() {
-    let localLeads: Lead[] = [];
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('wf_leads');
-        if (stored) {
-          localLeads = JSON.parse(stored);
+  async getLeads(): Promise<Lead[]> {
+    const targetWebhook = (typeof window !== 'undefined' && localStorage.getItem('wf_google_webhook_url')) || 'https://script.google.com/macros/s/AKfycbyc__n3C9_6t3Vz0y7H8sL78xR1yN2vQ95Z6k0M2o4h9G3F5J1wB3N2/exec';
+    try {
+      const res = await fetch(`${targetWebhook}?action=getLeads`, { cache: 'no-store' });
+      if (res.ok) {
+        const json = await res.json();
+        if (json && json.status === 'SUCCESS' && Array.isArray(json.leads)) {
+          return json.leads.map((l: any) => ({
+            id: l.id || `lead-${Date.now()}`,
+            leadNumber: l.leadNumber,
+            name: l.name,
+            phone: l.phone,
+            email: l.email || '',
+            city: l.city || '',
+            employmentType: l.employmentType || 'SALARIED',
+            monthlyIncome: Number(l.monthlyIncome) || 0,
+            loanType: (l.loanType || 'PERSONAL').toUpperCase(),
+            loanAmount: Number(l.loanAmount) || 0,
+            status: l.status || 'NEW',
+            priority: l.priority || 'HIGH',
+            tags: l.tags || '',
+            remarks: l.remarks || '',
+            source: l.source || 'WEBSITE_FORM',
+            assignedTo: l.assignedTo || null,
+            assignedToId: l.assignedTo ? l.assignedTo.id || 'u3' : null,
+            notes: Array.isArray(l.notes) ? l.notes : [],
+            whatsappClicked: true,
+            createdAt: l.createdAt || new Date().toISOString(),
+            updatedAt: l.updatedAt || new Date().toISOString(),
+            isDeleted: false,
+          }));
         }
-      } catch (err) {
-        console.error('Error parsing local leads:', err);
       }
+    } catch (err) {
+      console.warn('Google Sheets fetch error (fallback to local state):', err);
     }
-    // Merge local leads with MOCK_LEADS based on ID / leadNumber
-    const existingIds = new Set(localLeads.map((l) => l.id));
-    const unmergedMock = MOCK_LEADS.filter((l) => !existingIds.has(l.id));
-    const allLeads = [...localLeads, ...unmergedMock];
-
-    return allLeads.filter((l) => !l.isDeleted);
+    return MOCK_LEADS.filter((l) => !l.isDeleted);
   },
 
   async getLeadById(id: string) {
@@ -224,54 +243,55 @@ export const clientDbService = {
   },
 
   async updateLead(id: string, data: Partial<Lead>, changedBy: string = 'Admin') {
-    const all = await this.getLeads();
-    const idx = all.findIndex((l) => l.id === id);
-    if (idx !== -1) {
-      const oldLead = all[idx];
-      const updated = { ...oldLead, ...data, updatedAt: new Date().toISOString() };
+    const targetWebhook = (typeof window !== 'undefined' && localStorage.getItem('wf_google_webhook_url')) || 'https://script.google.com/macros/s/AKfycbyc__n3C9_6t3Vz0y7H8sL78xR1yN2vQ95Z6k0M2o4h9G3F5J1wB3N2/exec';
+    
+    try {
+      const params = new URLSearchParams();
+      params.append('action', 'updateLead');
+      params.append('id', id);
+      if (data.status) params.append('status', data.status);
+      if (data.assignedTo) params.append('assignedToName', data.assignedTo.name);
       
-      if (data.status && data.status !== oldLead.status) {
-        updated.statusHistory = updated.statusHistory || [];
-        updated.statusHistory.unshift({
-          id: `sh-${Date.now()}`,
-          leadId: id,
-          oldStatus: oldLead.status,
-          newStatus: data.status,
-          changedBy,
-          changedAt: new Date().toISOString(),
-        });
-      }
-      
-      all[idx] = updated;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('wf_leads', JSON.stringify(all));
-      }
-      const mockIdx = MOCK_LEADS.findIndex((l) => l.id === id);
-      if (mockIdx !== -1) MOCK_LEADS[mockIdx] = updated;
-      return updated;
+      fetch(targetWebhook, {
+        method: 'POST',
+        body: params,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      }).catch((e) => console.log('Update webhook notice:', e));
+    } catch (err) {}
+
+    const mockIdx = MOCK_LEADS.findIndex((l) => l.id === id);
+    if (mockIdx !== -1) {
+      MOCK_LEADS[mockIdx] = { ...MOCK_LEADS[mockIdx], ...data, updatedAt: new Date().toISOString() };
+      return MOCK_LEADS[mockIdx];
     }
     return null;
   },
 
   async addLeadNote(leadId: string, authorName: string, content: string) {
-    const all = await this.getLeads();
-    const lead = all.find((l) => l.id === leadId);
-    if (lead) {
-      lead.notes = lead.notes || [];
-      const newNote = {
-        id: `note-${Date.now()}`,
-        leadId,
-        authorName,
-        content,
-        createdAt: new Date().toISOString(),
-      };
-      lead.notes.unshift(newNote);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('wf_leads', JSON.stringify(all));
-      }
-      return newNote;
-    }
-    return null;
+    const targetWebhook = (typeof window !== 'undefined' && localStorage.getItem('wf_google_webhook_url')) || 'https://script.google.com/macros/s/AKfycbyc__n3C9_6t3Vz0y7H8sL78xR1yN2vQ95Z6k0M2o4h9G3F5J1wB3N2/exec';
+    
+    try {
+      const params = new URLSearchParams();
+      params.append('action', 'addNote');
+      params.append('leadId', leadId);
+      params.append('authorName', authorName);
+      params.append('content', content);
+      
+      fetch(targetWebhook, {
+        method: 'POST',
+        body: params,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      }).catch((e) => console.log('Add note webhook notice:', e));
+    } catch (err) {}
+
+    const newNote = {
+      id: `note-${Date.now()}`,
+      leadId,
+      authorName,
+      content,
+      createdAt: new Date().toISOString(),
+    };
+    return newNote;
   },
 
   async softDeleteLead(id: string, changedBy: string = 'Admin') {

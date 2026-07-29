@@ -345,45 +345,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const yyyy = now.getFullYear();
         const mm = String(now.getMonth() + 1).padStart(2, '0');
         const dd = String(now.getDate()).padStart(2, '0');
-        const seq = String(Math.floor(Math.random() * 900000 + 100000));
-        const leadNumber = `WF-${yyyy}${mm}${dd}-${seq}`;
-
-        // Save lead object into localStorage so it displays immediately in Admin Portal (/admin)
-        const leadObj = {
-            id: `lead-${Date.now()}`,
-            leadNumber,
-            name,
-            phone,
-            email,
-            city,
-            employmentType: 'SALARIED',
-            monthlyIncome: 0,
-            loanType: loanType.toUpperCase(),
-            loanAmount: Number(loanAmountDigits) || 0,
-            status: 'NEW',
-            priority: 'HIGH',
-            tags: 'Website Submission',
-            remarks: remarks || 'Inquiry submitted via website form.',
-            source: 'WEBSITE_FORM',
-            whatsappClicked: true,
-            whatsappClickedAt: now.toISOString(),
-            createdAt: now.toISOString(),
-            updatedAt: now.toISOString()
-        };
+        // Submit to Google Apps Script Webhook API
+        const targetWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbyc__n3C9_6t3Vz0y7H8sL78xR1yN2vQ95Z6k0M2o4h9G3F5J1wB3N2/exec';
+        
+        let serverResult = null;
 
         try {
-            const existingLeads = JSON.parse(localStorage.getItem('wf_leads') || '[]');
-            existingLeads.unshift(leadObj);
-            localStorage.setItem('wf_leads', JSON.stringify(existingLeads));
-        } catch (err) {
-            console.error('Failed to persist lead to localStorage:', err);
-        }
-
-        // Background submit to Google Apps Script / Google Form if URL is configured
-        const targetWebhook = localStorage.getItem('wf_google_webhook_url') || GOOGLE_SCRIPT_URL;
-        if (targetWebhook) {
-            const formData = new FormData();
-            formData.append('leadNumber', leadNumber);
+            const formData = new URLSearchParams();
+            formData.append('action', 'createLead');
             formData.append('name', name);
             formData.append('phone', phone);
             formData.append('email', email);
@@ -391,14 +360,36 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('loanType', loanType);
             formData.append('loanAmount', loanAmountDigits);
             formData.append('remarks', remarks);
-            formData.append('submittedAt', now.toISOString());
-            fetch(targetWebhook, {
+            formData.append('source', 'WEBSITE_FORM');
+
+            const res = await fetch(targetWebhook, {
                 method: 'POST',
-                mode: 'no-cors',
-                body: new URLSearchParams(formData).toString(),
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            }).catch(err => console.log('Background Google Sheet submit error:', err));
+                body: formData,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+
+            if (res.ok) {
+                try {
+                    serverResult = await res.json();
+                } catch (e) {
+                    serverResult = { status: 'SUCCESS' };
+                }
+            }
+        } catch (err) {
+            console.error('Google Apps Script POST error:', err);
         }
+
+        // FAILURE HANDLING: If Google Sheets write fails or returns error, DO NOT OPEN WHATSAPP!
+        if (!serverResult || serverResult.status === 'ERROR') {
+            alert('Submission failed. Could not record inquiry into Google Sheets database. Please check your connection and try again.');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+            return;
+        }
+
+        const leadNumber = serverResult.leadNumber || `WF-${yyyy}${mm}${dd}-${Math.floor(Math.random() * 900000 + 100000)}`;
 
         // Build WhatsApp message
         const loanLabel = {
