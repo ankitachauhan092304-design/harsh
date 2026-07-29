@@ -21,9 +21,7 @@ export default function SettingsManager({
     contactEmail: settings.contactEmail || 'info@whitestonefincorp.com',
     contactAddress: settings.contactAddress || 'Level 14, Supreme Business Park, Hiranandani Gardens, Powai, Mumbai - 400076',
     whatsappNumber: settings.whatsappNumber || '919824975488',
-    googleBusinessUrl: settings.googleBusinessUrl || 'https://maps.google.com/?cid=whitestonefincorp',
-    facebookUrl: settings.facebookUrl || 'https://facebook.com/whitestonefincorp',
-    linkedinUrl: settings.linkedinUrl || 'https://linkedin.com/company/whitestonefincorp',
+    googleWebhookUrl: settings.googleWebhookUrl || localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbyc__n3C9_6t3Vz0y7H8sL78xR1yN2vQ95Z6k0M2o4h9G3F5J1wB3N2/exec',
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -38,11 +36,14 @@ export default function SettingsManager({
 
     Object.entries(formData).forEach(([key, val]) => {
       onSaveSetting(key, val);
+      if (key === 'googleWebhookUrl') {
+        localStorage.setItem('wf_google_webhook_url', val);
+      }
     });
 
     setTimeout(() => {
       setIsSaving(false);
-      setSuccessMsg('Website configuration settings updated successfully!');
+      setSuccessMsg('Website configuration & Google Sheet Webhook settings updated successfully!');
     }, 400);
   };
 

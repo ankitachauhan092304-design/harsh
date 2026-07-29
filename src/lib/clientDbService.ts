@@ -292,11 +292,28 @@ export const clientDbService = {
   },
 
   async getLeads() {
-    return MOCK_LEADS.filter((l) => !l.isDeleted);
+    let localLeads: Lead[] = [];
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('wf_leads');
+        if (stored) {
+          localLeads = JSON.parse(stored);
+        }
+      } catch (err) {
+        console.error('Error parsing local leads:', err);
+      }
+    }
+    // Merge local leads with MOCK_LEADS based on ID / leadNumber
+    const existingIds = new Set(localLeads.map((l) => l.id));
+    const unmergedMock = MOCK_LEADS.filter((l) => !existingIds.has(l.id));
+    const allLeads = [...localLeads, ...unmergedMock];
+
+    return allLeads.filter((l) => !l.isDeleted);
   },
 
   async getLeadById(id: string) {
-    return MOCK_LEADS.find((l) => l.id === id) || null;
+    const all = await this.getLeads();
+    return all.find((l) => l.id === id) || null;
   },
 
   async createLead(data: Partial<Lead>) {
@@ -345,13 +362,21 @@ export const clientDbService = {
       updatedAt: new Date().toISOString(),
     };
     MOCK_LEADS.unshift(newLead);
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = JSON.parse(localStorage.getItem('wf_leads') || '[]');
+        stored.unshift(newLead);
+        localStorage.setItem('wf_leads', JSON.stringify(stored));
+      } catch (err) {}
+    }
     return newLead;
   },
 
   async updateLead(id: string, data: Partial<Lead>, changedBy: string = 'Admin') {
-    const idx = MOCK_LEADS.findIndex((l) => l.id === id);
+    const all = await this.getLeads();
+    const idx = all.findIndex((l) => l.id === id);
     if (idx !== -1) {
-      const oldLead = MOCK_LEADS[idx];
+      const oldLead = all[idx];
       const updated = { ...oldLead, ...data, updatedAt: new Date().toISOString() };
       
       if (data.status && data.status !== oldLead.status) {
@@ -366,14 +391,20 @@ export const clientDbService = {
         });
       }
       
-      MOCK_LEADS[idx] = updated;
+      all[idx] = updated;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('wf_leads', JSON.stringify(all));
+      }
+      const mockIdx = MOCK_LEADS.findIndex((l) => l.id === id);
+      if (mockIdx !== -1) MOCK_LEADS[mockIdx] = updated;
       return updated;
     }
     return null;
   },
 
   async addLeadNote(leadId: string, authorName: string, content: string) {
-    const lead = MOCK_LEADS.find((l) => l.id === leadId);
+    const all = await this.getLeads();
+    const lead = all.find((l) => l.id === leadId);
     if (lead) {
       lead.notes = lead.notes || [];
       const newNote = {
@@ -384,16 +415,23 @@ export const clientDbService = {
         createdAt: new Date().toISOString(),
       };
       lead.notes.unshift(newNote);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('wf_leads', JSON.stringify(all));
+      }
       return newNote;
     }
     return null;
   },
 
   async softDeleteLead(id: string, changedBy: string = 'Admin') {
-    const lead = MOCK_LEADS.find((l) => l.id === id);
+    const all = await this.getLeads();
+    const lead = all.find((l) => l.id === id);
     if (lead) {
       lead.isDeleted = true;
       lead.updatedAt = new Date().toISOString();
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('wf_leads', JSON.stringify(all));
+      }
       await this.createAuditLog(changedBy, 'LEAD_DELETE', `Lead #${lead.leadNumber} soft deleted`);
       return true;
     }

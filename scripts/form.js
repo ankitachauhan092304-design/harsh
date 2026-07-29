@@ -348,16 +348,56 @@ document.addEventListener('DOMContentLoaded', () => {
         const seq = String(Math.floor(Math.random() * 900000 + 100000));
         const leadNumber = `WF-${yyyy}${mm}${dd}-${seq}`;
 
-        // Background submit to Google Apps Script if URL is configured
-        if (GOOGLE_SCRIPT_URL && !GOOGLE_SCRIPT_URL.includes('AKfycbyc__')) {
-            const formData = new FormData(contactForm);
+        // Save lead object into localStorage so it displays immediately in Admin Portal (/admin)
+        const leadObj = {
+            id: `lead-${Date.now()}`,
+            leadNumber,
+            name,
+            phone,
+            email,
+            city,
+            employmentType: 'SALARIED',
+            monthlyIncome: 0,
+            loanType: loanType.toUpperCase(),
+            loanAmount: Number(loanAmountDigits) || 0,
+            status: 'NEW',
+            priority: 'HIGH',
+            tags: 'Website Submission',
+            remarks: remarks || 'Inquiry submitted via website form.',
+            source: 'WEBSITE_FORM',
+            whatsappClicked: true,
+            whatsappClickedAt: now.toISOString(),
+            createdAt: now.toISOString(),
+            updatedAt: now.toISOString()
+        };
+
+        try {
+            const existingLeads = JSON.parse(localStorage.getItem('wf_leads') || '[]');
+            existingLeads.unshift(leadObj);
+            localStorage.setItem('wf_leads', JSON.stringify(existingLeads));
+        } catch (err) {
+            console.error('Failed to persist lead to localStorage:', err);
+        }
+
+        // Background submit to Google Apps Script / Google Form if URL is configured
+        const targetWebhook = localStorage.getItem('wf_google_webhook_url') || GOOGLE_SCRIPT_URL;
+        if (targetWebhook) {
+            const formData = new FormData();
             formData.append('leadNumber', leadNumber);
-            const urlEncodedData = new URLSearchParams(formData).toString();
-            fetch(GOOGLE_SCRIPT_URL, {
+            formData.append('name', name);
+            formData.append('phone', phone);
+            formData.append('email', email);
+            formData.append('city', city);
+            formData.append('loanType', loanType);
+            formData.append('loanAmount', loanAmountDigits);
+            formData.append('remarks', remarks);
+            formData.append('submittedAt', now.toISOString());
+            fetch(targetWebhook, {
                 method: 'POST',
-                body: urlEncodedData,
+                mode: 'no-cors',
+                body: new URLSearchParams(formData).toString(),
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            }).catch(err => console.log('Background script error:', err));
+            }).catch(err => console.log('Background Google Sheet submit error:', err));
         }
 
         // Build WhatsApp message
