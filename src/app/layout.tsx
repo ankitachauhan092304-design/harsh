@@ -4,6 +4,7 @@ import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ConversionWidgets from '@/components/ConversionWidgets';
+import MainLayoutWrapper from '@/components/MainLayoutWrapper';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -156,12 +157,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col font-inter bg-slate-50 text-slate-800" suppressHydrationWarning>
-        <Header />
-        <main className="flex-grow pt-[84px] md:pt-[116px]">
-          {children}
-        </main>
-        <Footer />
-        <ConversionWidgets />
+        <MainLayoutWrapper>{children}</MainLayoutWrapper>
       </body>
     </html>
   );
