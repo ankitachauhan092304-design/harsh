@@ -6,6 +6,7 @@ export interface AdminUser {
   name: string;
   role: Role;
   status: 'ACTIVE' | 'INACTIVE';
+  passwordHash?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -60,6 +61,7 @@ export interface Lead {
   assignedTo?: AdminUser | null;
   notes?: LeadNote[];
   statusHistory?: LeadStatusHistory[];
+  isDeleted?: boolean;
   createdAt: string;
   updatedAt: string;
 }
