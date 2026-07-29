@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload, CheckCircle, AlertCircle, Loader2,
@@ -29,6 +29,33 @@ const LOAN_OPTIONS = [
   { value: 'CREDIT_CARD', label: 'Credit Card Comparison' },
 ];
 
+const GUJARAT_CITIES = [
+  'Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar',
+  'Jamnagar', 'Junagadh', 'Gandhinagar', 'Anand', 'Nadiad',
+  'Mehsana', 'Patan', 'Palanpur', 'Navsari', 'Valsad',
+  'Bharuch', 'Morbi', 'Porbandar', 'Amreli', 'Botad',
+  'Godhra', 'Veraval', 'Gandhidham', 'Bhuj', 'Dahod',
+  'Himmatnagar', 'Kalol', 'Vapi', 'Sanand', 'Deesa',
+  'Jetpur', 'Mahuva', 'Ankleshwar', 'Viramgam', 'Bardoli',
+  'Kadi', 'Unjha', 'Dhoraji', 'Gondal', 'Pardi',
+  'Vyara', 'Modasa', 'Wadhwan', 'Surendranagar', 'Borsad',
+  'Khambhat', 'Dabhoi', 'Halol', 'Mangrol', 'Keshod',
+  'Una', 'Dwarka', 'Mandvi', 'Mundra'
+];
+
+/** Formats a numeric string to Indian currency formatting (e.g. 100000 -> 1,00,000) */
+function formatIndianCurrency(val: string): string {
+  const digits = val.replace(/\D/g, '');
+  if (!digits) return '';
+  const num = Number(digits);
+  return num.toLocaleString('en-IN');
+}
+
+/** Sanitize input strings against HTML / script tags */
+function sanitizeInput(str: string): string {
+  return str.replace(/<[^>]*>?/gm, '').replace(/\n{3,}/g, '\n\n');
+}
+
 export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps) {
   const [formData, setFormData] = useState({
     name: '', phone: '', email: '', city: '',
@@ -46,40 +73,86 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
   const [savedLeadId, setSavedLeadId] = useState<string>('');
   const [savedLeadNumber, setSavedLeadNumber] = useState<string>('');
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  
+  // City Autocomplete state
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [highlightedCityIdx, setHighlightedCityIdx] = useState(-1);
+  const cityInputRef = useRef<HTMLInputElement>(null);
+  const cityContainerRef = useRef<HTMLDivElement>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
 
-  // ── Validation ───────────────────────────────────────────────────────────
+  // Filtered cities list for autocomplete
+  const filteredCities = GUJARAT_CITIES.filter((city) =>
+    city.toLowerCase().includes(formData.city.trim().toLowerCase())
+  );
+
+  // Close city dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (cityContainerRef.current && !cityContainerRef.current.contains(e.target as Node)) {
+        setShowCityDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // ── Validation Rules ──────────────────────────────────────────────────────
   const validateField = useCallback((name: string, value: string | boolean): string => {
     switch (name) {
-      case 'name':
-        if (!String(value).trim()) return 'Full name is required.';
-        if (String(value).trim().length < 3) return 'Name must be at least 3 characters.';
+      case 'name': {
+        const strVal = String(value).trim();
+        if (!strVal) return 'Full name is required.';
+        if (strVal.length < 2) return 'Please enter a valid full name.';
+        if (strVal.length > 60) return 'Name cannot exceed 60 characters.';
+        if (!/^[a-zA-Z\s\.\-']+$/.test(strVal)) return 'Please enter a valid full name.';
         return '';
-      case 'phone':
-        if (!String(value).trim()) return 'Mobile number is required.';
-        if (!/^[6-9]\d{9}$/.test(String(value))) return 'Enter a valid 10-digit Indian mobile number.';
+      }
+      case 'phone': {
+        const digits = String(value).replace(/\D/g, '');
+        if (!digits) return 'Mobile number is required.';
+        if (digits.length !== 10 || !/^[6-9]\d{9}$/.test(digits)) {
+          return 'Enter a valid 10-digit mobile number.';
+        }
         return '';
-      case 'email':
-        if (!String(value).trim()) return ''; // Optional
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))) return 'Enter a valid email address.';
+      }
+      case 'email': {
+        const emailVal = String(value).trim();
+        if (!emailVal) return ''; // Optional
+        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailVal)) {
+          return 'Enter a valid email address.';
+        }
         return '';
-      case 'city':
-        if (!String(value).trim()) return 'City is required.';
+      }
+      case 'city': {
+        const cityVal = String(value).trim();
+        if (!cityVal) return 'City is required.';
         return '';
-      case 'loanAmount':
-        if (!String(value).trim()) return 'Loan amount is required.';
-        if (isNaN(Number(value)) || Number(value) <= 0) return 'Enter a valid positive amount.';
+      }
+      case 'loanAmount': {
+        const digits = String(value).replace(/\D/g, '');
+        if (!digits) return 'Loan amount is required.';
+        const amountNum = Number(digits);
+        if (amountNum < 50000) return 'Minimum loan amount is ₹50,000.';
+        if (amountNum > 100000000) return 'Maximum loan amount is ₹10,00,00,000.';
         return '';
-      case 'consent':
+      }
+      case 'loanType': {
+        if (!value) return 'Please select a loan category.';
+        return '';
+      }
+      case 'consent': {
         if (!value) return 'Please provide authorization to proceed.';
         return '';
+      }
       default: return '';
     }
   }, []);
 
   const validateAll = useCallback(() => {
-    const fields = ['name', 'phone', 'email', 'city', 'loanAmount', 'consent'] as const;
+    const fields = ['name', 'phone', 'email', 'city', 'loanAmount', 'loanType', 'consent'] as const;
     const newErrors: Record<string, string> = {};
     fields.forEach((field) => {
       const val = field === 'consent' ? formData.consent : formData[field];
@@ -90,15 +163,93 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     return Object.keys(newErrors).length === 0;
   }, [formData, validateField]);
 
+  // Derived Form Validity
+  const isFormValid = React.useMemo(() => {
+    const nameErr = validateField('name', formData.name);
+    const phoneErr = validateField('phone', formData.phone);
+    const emailErr = validateField('email', formData.email);
+    const cityErr = validateField('city', formData.city);
+    const amountErr = validateField('loanAmount', formData.loanAmount);
+    const typeErr = validateField('loanType', formData.loanType);
+    const consentErr = validateField('consent', formData.consent);
+
+    return !nameErr && !phoneErr && !emailErr && !cityErr && !amountErr && !typeErr && !consentErr;
+  }, [formData, validateField]);
+
   const handleBlur = (name: string) => {
     setTouched((prev) => ({ ...prev, [name]: true }));
+    if (name === 'name') {
+      // Trim & collapse spaces on blur
+      const cleaned = formData.name.trim().replace(/\s+/g, ' ');
+      setFormData((prev) => ({ ...prev, name: cleaned }));
+      setErrors((prev) => ({ ...prev, name: validateField('name', cleaned) }));
+      return;
+    }
     const val = name === 'consent' ? formData.consent : (formData as Record<string, unknown>)[name];
     const err = validateField(name, val as string | boolean);
     setErrors((prev) => ({ ...prev, [name]: err }));
   };
 
+  // Input Restrictions while typing
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+
+    if (name === 'name') {
+      // Restrict characters: Alphabets, spaces, periods, hyphens, apostrophes only
+      const restricted = value.replace(/[^a-zA-Z\s\.\-']/g, '').slice(0, 60);
+      setFormData((prev) => ({ ...prev, name: restricted }));
+      if (touched.name) {
+        setErrors((prev) => ({ ...prev, name: validateField('name', restricted) }));
+      }
+      return;
+    }
+
+    if (name === 'phone') {
+      // Digits ONLY, max 10 digits
+      const digits = value.replace(/\D/g, '').slice(0, 10);
+      setFormData((prev) => ({ ...prev, phone: digits }));
+      if (touched.phone) {
+        setErrors((prev) => ({ ...prev, phone: validateField('phone', digits) }));
+      }
+      return;
+    }
+
+    if (name === 'email') {
+      // Lowercase, trim spaces
+      const lower = value.toLowerCase().replace(/\s/g, '');
+      setFormData((prev) => ({ ...prev, email: lower }));
+      if (touched.email) {
+        setErrors((prev) => ({ ...prev, email: validateField('email', lower) }));
+      }
+      return;
+    }
+
+    if (name === 'city') {
+      setFormData((prev) => ({ ...prev, city: value }));
+      setShowCityDropdown(true);
+      setHighlightedCityIdx(-1);
+      if (touched.city) {
+        setErrors((prev) => ({ ...prev, city: validateField('city', value) }));
+      }
+      return;
+    }
+
+    if (name === 'loanAmount') {
+      // Numbers only
+      const digits = value.replace(/\D/g, '');
+      setFormData((prev) => ({ ...prev, loanAmount: digits }));
+      if (touched.loanAmount) {
+        setErrors((prev) => ({ ...prev, loanAmount: validateField('loanAmount', digits) }));
+      }
+      return;
+    }
+
+    if (name === 'message') {
+      const sanitized = sanitizeInput(value).slice(0, 500);
+      setFormData((prev) => ({ ...prev, message: sanitized }));
+      return;
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (touched[name]) {
       const err = validateField(name, value);
@@ -113,12 +264,61 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     setErrors((prev) => ({ ...prev, consent: validateField('consent', checked) }));
   };
 
+  // City Autocomplete selection
+  const selectCity = (city: string) => {
+    setFormData((prev) => ({ ...prev, city }));
+    setShowCityDropdown(false);
+    setTouched((prev) => ({ ...prev, city: true }));
+    setErrors((prev) => ({ ...prev, city: validateField('city', city) }));
+  };
+
+  const handleCityKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showCityDropdown || filteredCities.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedCityIdx((prev) => (prev < filteredCities.length - 1 ? prev + 1 : 0));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedCityIdx((prev) => (prev > 0 ? prev - 1 : filteredCities.length - 1));
+    } else if (e.key === 'Enter') {
+      if (highlightedCityIdx >= 0 && highlightedCityIdx < filteredCities.length) {
+        e.preventDefault();
+        selectCity(filteredCities[highlightedCityIdx]);
+      }
+    } else if (e.key === 'Escape') {
+      setShowCityDropdown(false);
+    }
+  };
+
   // ── File Handling ────────────────────────────────────────────────────────
   const processFiles = useCallback((selectedFiles: File[]) => {
-    const validFiles = selectedFiles.filter((file) => {
+    const validFiles: File[] = [];
+    const fileErrors: string[] = [];
+
+    selectedFiles.forEach((file) => {
       const sizeMb = file.size / (1024 * 1024);
-      return sizeMb <= 5 && ['application/pdf', 'image/jpeg', 'image/png'].includes(file.type);
+      const isAllowedType = ['application/pdf', 'image/jpeg', 'image/png'].includes(file.type);
+      
+      if (!isAllowedType) {
+        fileErrors.push(`${file.name}: Only PDF, JPG, and PNG files are allowed.`);
+        return;
+      }
+      if (sizeMb > 5) {
+        fileErrors.push(`${file.name}: File size exceeds 5MB limit.`);
+        return;
+      }
+      validFiles.push(file);
     });
+
+    if (fileErrors.length > 0) {
+      setErrors((prev) => ({ ...prev, general: fileErrors.join(' ') }));
+    } else {
+      setErrors((prev) => {
+        const copy = { ...prev };
+        delete copy.general;
+        return copy;
+      });
+    }
 
     validFiles.forEach((file) => {
       const key = `${file.name}-${file.size}`;
@@ -165,7 +365,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     e.preventDefault();
     if (formData.honeypot) return;
 
-    setTouched({ name: true, phone: true, city: true, loanAmount: true, consent: true });
+    setTouched({ name: true, phone: true, email: true, city: true, loanAmount: true, loanType: true, consent: true });
     if (!validateAll()) return;
 
     const lastSubmission = localStorage.getItem('last_lead_sub');
@@ -182,10 +382,10 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
 
     try {
       const payload = {
-        name: formData.name,
+        name: formData.name.trim(),
         phone: formData.phone,
         email: formData.email,
-        city: formData.city,
+        city: formData.city.trim(),
         loanType: formData.loanType,
         loanAmount: Number(formData.loanAmount),
         employmentType: 'SALARIED',
@@ -219,15 +419,12 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
       leadNumber = `WF-${yyyy}${mm}${dd}-${seq}`;
     }
 
-    // Record WhatsApp click if API exists
     fetch(`/api/leads/${leadId}/whatsapp`, { method: 'POST' }).catch(() => {});
 
-    // Store for UI
     setSavedLeadId(leadId);
     setSavedLeadNumber(leadNumber);
     localStorage.setItem('last_lead_sub', Date.now().toString());
 
-    // Fire confetti
     confetti({
       particleCount: 120, spread: 80,
       origin: { y: 0.55 },
@@ -236,7 +433,6 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
 
     setSubmitStatus('SUCCESS');
 
-    // Auto-open WhatsApp immediately after save
     setIsOpeningWA(true);
     const waMessage = buildEnquiryMessage({
       leadNumber,
@@ -254,13 +450,11 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
       setIsOpeningWA(false);
     }, 800);
 
-    // Reset form
     setFormData({ name: '', phone: '', email: '', city: '', loanType: defaultLoanType, loanAmount: '', message: '', consent: false, honeypot: '' });
     setFiles([]); setTouched({}); setErrors({});
     setIsSubmitting(false);
   };
 
-  // ── Manual WhatsApp re-open from success screen ───────────────────────────
   const handleManualWhatsApp = () => {
     if (!savedLeadNumber) return;
     const waMessage = buildEnquiryMessage({
@@ -274,16 +468,14 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     });
     const waUrl = buildWhatsAppUrl(waMessage, DEFAULT_WA_NUMBER);
     window.location.href = waUrl;
-    // Track click again
     if (savedLeadId) fetch(`/api/leads/${savedLeadId}/whatsapp`, { method: 'POST' }).catch(() => {});
   };
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
   const fieldClass = (name: string) =>
     `w-full px-4 py-3 rounded-xl border bg-white text-sm font-medium outline-none transition-all duration-200 placeholder:text-slate-300 ${
       touched[name] && errors[name]
         ? 'border-rose-400 focus:border-rose-500 ring-1 ring-rose-200 bg-rose-50/20'
-        : touched[name] && !errors[name]
+        : touched[name] && !errors[name] && (formData as Record<string, unknown>)[name]
         ? 'border-emerald-400 focus:border-emerald-500 ring-1 ring-emerald-100'
         : 'border-slate-200 focus:border-[#0B4F9C] focus:ring-2 focus:ring-[#0B4F9C]/10'
     }`;
@@ -302,12 +494,11 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
 
   const renderValidMark = (name: string) =>
     touched[name] && !errors[name] && (formData as Record<string, unknown>)[name] ? (
-      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500">
+      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 pointer-events-none">
         <CheckCircle size={15} />
       </motion.div>
     ) : null;
 
-  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/80 relative overflow-hidden">
       <div className="h-1 w-full bg-gradient-to-r from-[#0B4F9C] via-[#6366f1] to-[#00A86B]" />
@@ -324,7 +515,6 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
               transition={{ type: 'spring', stiffness: 280, damping: 22 }}
               className="flex flex-col items-center text-center py-14 gap-6"
             >
-              {/* Animated check */}
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -349,7 +539,6 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                 </p>
               </motion.div>
 
-              {/* WhatsApp CTA */}
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="flex flex-col gap-3 w-full max-w-xs">
                 <button
                   onClick={handleManualWhatsApp}
@@ -420,79 +609,182 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
 
               {/* Row 1: Name + Phone */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Name */}
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                     <User size={11} /> Full Name <span className="text-rose-400">*</span>
                   </label>
                   <div className="relative">
-                    <input type="text" name="name" value={formData.name} onChange={handleInputChange} onBlur={() => handleBlur('name')} placeholder="Enter full legal name" className={fieldClass('name')} />
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      onBlur={() => handleBlur('name')}
+                      placeholder="e.g. Harsh Parmar"
+                      maxLength={60}
+                      className={fieldClass('name')}
+                      aria-invalid={!!errors.name}
+                    />
                     {renderValidMark('name')}
                   </div>
                   {renderErrorMsg('name')}
                 </div>
+
+                {/* Phone */}
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                     <Phone size={11} /> Mobile Number <span className="text-rose-400">*</span>
                   </label>
                   <div className="relative flex items-center">
                     <span className="absolute left-4 text-sm font-bold text-slate-400 select-none pointer-events-none">+91</span>
-                    <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} onBlur={() => handleBlur('phone')} placeholder="98249 75488" maxLength={10} className={`${fieldClass('phone')} pl-12`} />
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      onBlur={() => handleBlur('phone')}
+                      placeholder="98249 75488"
+                      maxLength={10}
+                      className={`${fieldClass('phone')} pl-12`}
+                      aria-invalid={!!errors.phone}
+                    />
                     {touched.phone && !errors.phone && formData.phone && (
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 text-emerald-500"><CheckCircle size={15} /></motion.div>
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 text-emerald-500 pointer-events-none">
+                        <CheckCircle size={15} />
+                      </motion.div>
                     )}
                   </div>
                   {renderErrorMsg('phone')}
                 </div>
               </div>
 
-              {/* Row 2: Email + City */}
+              {/* Row 2: Email + City (Autocomplete) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Email */}
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                     <Mail size={11} /> Email Address
                   </label>
                   <div className="relative">
-                    <input type="email" name="email" value={formData.email} onChange={handleInputChange} onBlur={() => handleBlur('email')} placeholder="name@example.com" className={fieldClass('email')} />
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      onBlur={() => handleBlur('email')}
+                      placeholder="name@example.com"
+                      className={fieldClass('email')}
+                      aria-invalid={!!errors.email}
+                    />
                     {renderValidMark('email')}
                   </div>
                   {renderErrorMsg('email')}
                 </div>
-                <div className="flex flex-col gap-1">
+
+                {/* City Autocomplete */}
+                <div className="flex flex-col gap-1 relative" ref={cityContainerRef}>
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    <MapPin size={11} /> City <span className="text-rose-400">*</span>
+                    <MapPin size={11} /> City (Gujarat) <span className="text-rose-400">*</span>
                   </label>
                   <div className="relative">
-                    <input type="text" name="city" value={formData.city} onChange={handleInputChange} onBlur={() => handleBlur('city')} placeholder="e.g. Ahmedabad, Mumbai" className={fieldClass('city')} />
+                    <input
+                      ref={cityInputRef}
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      onFocus={() => setShowCityDropdown(true)}
+                      onBlur={() => handleBlur('city')}
+                      onKeyDown={handleCityKeyDown}
+                      placeholder="e.g. Ahmedabad, Surat"
+                      className={fieldClass('city')}
+                      autoComplete="off"
+                      aria-autocomplete="list"
+                      aria-expanded={showCityDropdown}
+                    />
                     {renderValidMark('city')}
                   </div>
                   {renderErrorMsg('city')}
+
+                  {/* Autocomplete Dropdown */}
+                  <AnimatePresence>
+                    {showCityDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        className="absolute left-0 right-0 top-[100%] mt-1 max-h-48 overflow-y-auto bg-white rounded-xl border border-slate-200 shadow-xl z-50 divide-y divide-slate-50"
+                      >
+                        {filteredCities.length > 0 ? (
+                          filteredCities.map((city, idx) => (
+                            <div
+                              key={city}
+                              onMouseDown={() => selectCity(city)}
+                              className={`px-4 py-2.5 text-xs font-semibold cursor-pointer flex items-center justify-between transition-colors ${
+                                highlightedCityIdx === idx ? 'bg-[#0B4F9C]/10 text-[#0B4F9C]' : 'hover:bg-slate-50 text-slate-700'
+                              }`}
+                            >
+                              <span>{city}</span>
+                              <span className="text-[10px] text-slate-400 font-normal">Gujarat</span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="px-4 py-3 text-xs font-semibold text-slate-400 text-center">
+                            No matching city found.
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
               {/* Row 3: Loan Type + Amount */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Loan Category */}
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    <ChevronDown size={11} /> Loan Category
+                    <ChevronDown size={11} /> Loan Category <span className="text-rose-400">*</span>
                   </label>
                   <div className="relative">
-                    <select name="loanType" value={formData.loanType} onChange={handleInputChange}
+                    <select
+                      name="loanType"
+                      value={formData.loanType}
+                      onChange={handleInputChange}
+                      onBlur={() => handleBlur('loanType')}
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-medium outline-none focus:border-[#0B4F9C] focus:ring-2 focus:ring-[#0B4F9C]/10 transition-all cursor-pointer appearance-none"
                     >
                       {LOAN_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                     </select>
                     <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                   </div>
+                  {renderErrorMsg('loanType')}
                 </div>
+
+                {/* Amount with Indian Currency formatting display */}
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                     <IndianRupee size={11} /> Required Amount <span className="text-rose-400">*</span>
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm pointer-events-none">₹</span>
-                    <input type="number" name="loanAmount" value={formData.loanAmount} onChange={handleInputChange} onBlur={() => handleBlur('loanAmount')} placeholder="e.g. 500000" className={`${fieldClass('loanAmount')} pl-8`} />
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      name="loanAmount"
+                      value={formData.loanAmount ? formatIndianCurrency(formData.loanAmount) : ''}
+                      onChange={handleInputChange}
+                      onBlur={() => handleBlur('loanAmount')}
+                      placeholder="e.g. 5,00,000"
+                      className={`${fieldClass('loanAmount')} pl-8`}
+                      aria-invalid={!!errors.loanAmount}
+                    />
                     {touched.loanAmount && !errors.loanAmount && formData.loanAmount && (
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500"><CheckCircle size={15} /></motion.div>
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 pointer-events-none">
+                        <CheckCircle size={15} />
+                      </motion.div>
                     )}
                   </div>
                   {renderErrorMsg('loanAmount')}
@@ -501,10 +793,18 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
 
               {/* Message */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                  <MessageSquare size={11} /> Special Requirements (Optional)
-                </label>
-                <textarea name="message" value={formData.message} onChange={handleInputChange} rows={3}
+                <div className="flex justify-between items-center">
+                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <MessageSquare size={11} /> Special Requirements (Optional)
+                  </label>
+                  <span className="text-[10px] text-slate-400 font-medium">{formData.message.length}/500</span>
+                </div>
+                <textarea
+                  name="message"
+                  value={formData.message}
+                  onChange={handleInputChange}
+                  rows={3}
+                  maxLength={500}
                   placeholder="Share credit history, turnover, or other details to help us find the best match..."
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-medium outline-none focus:border-[#0B4F9C] focus:ring-2 focus:ring-[#0B4F9C]/10 transition-all resize-none placeholder:text-slate-300"
                 />
@@ -600,8 +900,8 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
               {/* Submit */}
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#0B4F9C] via-[#1a5fb4] to-[#0B4F9C] hover:from-[#0a4485] hover:to-[#0a4485] text-white font-bold text-sm shadow-lg shadow-blue-500/15 hover:shadow-blue-500/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed relative overflow-hidden group btn-shine"
+                disabled={!isFormValid || isSubmitting}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#0B4F9C] via-[#1a5fb4] to-[#0B4F9C] hover:from-[#0a4485] hover:to-[#0a4485] text-white font-bold text-sm shadow-lg shadow-blue-500/15 hover:shadow-blue-500/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group btn-shine"
               >
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full duration-700" />
                 {isSubmitting ? (
