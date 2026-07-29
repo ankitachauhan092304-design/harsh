@@ -105,38 +105,40 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
       case 'name': {
         const strVal = String(value).trim();
         if (!strVal) return 'Full name is required.';
-        if (strVal.length < 2) return 'Please enter a valid full name.';
-        if (strVal.length > 60) return 'Name cannot exceed 60 characters.';
-        if (!/^[a-zA-Z\s\.\-']+$/.test(strVal)) return 'Please enter a valid full name.';
+        if (strVal.length < 2 || strVal.length > 60 || !/^[a-zA-Z\s\.\-']+$/.test(strVal)) {
+          return "Name should contain only letters, spaces, hyphen ( - ), apostrophe ( ' ) and dot ( . )";
+        }
         return '';
       }
       case 'phone': {
         const digits = String(value).replace(/\D/g, '');
         if (!digits) return 'Mobile number is required.';
         if (digits.length !== 10 || !/^[6-9]\d{9}$/.test(digits)) {
-          return 'Enter a valid 10-digit mobile number.';
+          return 'Enter a valid 10-digit mobile number starting with 6, 7, 8 or 9.';
         }
         return '';
       }
       case 'email': {
         const emailVal = String(value).trim();
-        if (!emailVal) return ''; // Optional
+        if (!emailVal) return 'Please enter a valid email address.';
         if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailVal)) {
-          return 'Enter a valid email address.';
+          return 'Please enter a valid email address.';
         }
         return '';
       }
       case 'city': {
         const cityVal = String(value).trim();
-        if (!cityVal) return 'City is required.';
+        if (!cityVal) return 'Please select a valid city from the list.';
+        const match = GUJARAT_CITIES.find((c) => c.toLowerCase() === cityVal.toLowerCase());
+        if (!match) return 'Please select a valid city from the list.';
         return '';
       }
       case 'loanAmount': {
         const digits = String(value).replace(/\D/g, '');
         if (!digits) return 'Loan amount is required.';
         const amountNum = Number(digits);
-        if (amountNum < 50000) return 'Minimum loan amount is ₹50,000.';
-        if (amountNum > 100000000) return 'Maximum loan amount is ₹10,00,00,000.';
+        if (amountNum < 10000) return 'Minimum loan amount is ₹10,000.';
+        if (amountNum > 50000000) return 'Maximum loan amount is ₹5,00,00,000.';
         return '';
       }
       case 'loanType': {

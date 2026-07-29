@@ -17,6 +17,17 @@ const path = require('path');
 
 const OUT = path.join(__dirname, '..', 'out');
 
+// Ensure helper scripts are copied into out/_next/static/chunks/
+const chunksDir = path.join(OUT, '_next', 'static', 'chunks');
+if (!fs.existsSync(chunksDir)) {
+  fs.mkdirSync(chunksDir, { recursive: true });
+}
+
+fs.copyFileSync(path.join(__dirname, 'form.js'), path.join(chunksDir, 'wf-form.js'));
+fs.copyFileSync(path.join(__dirname, 'calculators.js'), path.join(chunksDir, 'wf-calculators.js'));
+fs.copyFileSync(path.join(__dirname, 'credit-score.js'), path.join(chunksDir, 'wf-credit-score.js'));
+console.log('✅ Helper JS scripts copied into out/_next/static/chunks/');
+
 function getAllHtml(dir, list = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, e.name);
