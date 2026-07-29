@@ -163,23 +163,10 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     return Object.keys(newErrors).length === 0;
   }, [formData, validateField]);
 
-  // Derived Form Validity
-  const isFormValid = React.useMemo(() => {
-    const nameErr = validateField('name', formData.name);
-    const phoneErr = validateField('phone', formData.phone);
-    const emailErr = validateField('email', formData.email);
-    const cityErr = validateField('city', formData.city);
-    const amountErr = validateField('loanAmount', formData.loanAmount);
-    const typeErr = validateField('loanType', formData.loanType);
-    const consentErr = validateField('consent', formData.consent);
-
-    return !nameErr && !phoneErr && !emailErr && !cityErr && !amountErr && !typeErr && !consentErr;
-  }, [formData, validateField]);
-
+  // Handle blur event: mark field as touched and validate
   const handleBlur = (name: string) => {
     setTouched((prev) => ({ ...prev, [name]: true }));
     if (name === 'name') {
-      // Trim & collapse spaces on blur
       const cleaned = formData.name.trim().replace(/\s+/g, ' ');
       setFormData((prev) => ({ ...prev, name: cleaned }));
       setErrors((prev) => ({ ...prev, name: validateField('name', cleaned) }));
@@ -190,12 +177,11 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     setErrors((prev) => ({ ...prev, [name]: err }));
   };
 
-  // Input Restrictions while typing
+  // Input Restrictions while typing (Live validation only if field has been touched)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
 
     if (name === 'name') {
-      // Restrict characters: Alphabets, spaces, periods, hyphens, apostrophes only
       const restricted = value.replace(/[^a-zA-Z\s\.\-']/g, '').slice(0, 60);
       setFormData((prev) => ({ ...prev, name: restricted }));
       if (touched.name) {
@@ -205,7 +191,6 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     }
 
     if (name === 'phone') {
-      // Digits ONLY, max 10 digits
       const digits = value.replace(/\D/g, '').slice(0, 10);
       setFormData((prev) => ({ ...prev, phone: digits }));
       if (touched.phone) {
@@ -215,7 +200,6 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     }
 
     if (name === 'email') {
-      // Lowercase, trim spaces
       const lower = value.toLowerCase().replace(/\s/g, '');
       setFormData((prev) => ({ ...prev, email: lower }));
       if (touched.email) {
@@ -235,7 +219,6 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     }
 
     if (name === 'loanAmount') {
-      // Numbers only
       const digits = value.replace(/\D/g, '');
       setFormData((prev) => ({ ...prev, loanAmount: digits }));
       if (touched.loanAmount) {
@@ -365,7 +348,10 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     e.preventDefault();
     if (formData.honeypot) return;
 
+    // Mark ALL fields as touched when Submit is clicked
     setTouched({ name: true, phone: true, email: true, city: true, loanAmount: true, loanType: true, consent: true });
+    
+    // Validate all fields
     if (!validateAll()) return;
 
     const lastSubmission = localStorage.getItem('last_lead_sub');
@@ -471,6 +457,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     if (savedLeadId) fetch(`/api/leads/${savedLeadId}/whatsapp`, { method: 'POST' }).catch(() => {});
   };
 
+  // Field CSS styling - ONLY shows error styling if touched[name] is true!
   const fieldClass = (name: string) =>
     `w-full px-4 py-3 rounded-xl border bg-white text-sm font-medium outline-none transition-all duration-200 placeholder:text-slate-300 ${
       touched[name] && errors[name]
@@ -480,6 +467,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
         : 'border-slate-200 focus:border-[#0B4F9C] focus:ring-2 focus:ring-[#0B4F9C]/10'
     }`;
 
+  // Error message rendering - ONLY renders if field has been touched!
   const renderErrorMsg = (name: string) =>
     touched[name] && errors[name] ? (
       <motion.span
@@ -492,6 +480,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
       </motion.span>
     ) : null;
 
+  // Green checkmark rendering - ONLY renders if field is touched and valid
   const renderValidMark = (name: string) =>
     touched[name] && !errors[name] && (formData as Record<string, unknown>)[name] ? (
       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 pointer-events-none">
@@ -624,7 +613,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                       placeholder="e.g. Harsh Parmar"
                       maxLength={60}
                       className={fieldClass('name')}
-                      aria-invalid={!!errors.name}
+                      aria-invalid={touched.name && !!errors.name}
                     />
                     {renderValidMark('name')}
                   </div>
@@ -648,13 +637,9 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                       placeholder="98249 75488"
                       maxLength={10}
                       className={`${fieldClass('phone')} pl-12`}
-                      aria-invalid={!!errors.phone}
+                      aria-invalid={touched.phone && !!errors.phone}
                     />
-                    {touched.phone && !errors.phone && formData.phone && (
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 text-emerald-500 pointer-events-none">
-                        <CheckCircle size={15} />
-                      </motion.div>
-                    )}
+                    {renderValidMark('phone')}
                   </div>
                   {renderErrorMsg('phone')}
                 </div>
@@ -676,7 +661,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                       onBlur={() => handleBlur('email')}
                       placeholder="name@example.com"
                       className={fieldClass('email')}
-                      aria-invalid={!!errors.email}
+                      aria-invalid={touched.email && !!errors.email}
                     />
                     {renderValidMark('email')}
                   </div>
@@ -703,6 +688,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                       autoComplete="off"
                       aria-autocomplete="list"
                       aria-expanded={showCityDropdown}
+                      aria-invalid={touched.city && !!errors.city}
                     />
                     {renderValidMark('city')}
                   </div>
@@ -779,13 +765,9 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                       onBlur={() => handleBlur('loanAmount')}
                       placeholder="e.g. 5,00,000"
                       className={`${fieldClass('loanAmount')} pl-8`}
-                      aria-invalid={!!errors.loanAmount}
+                      aria-invalid={touched.loanAmount && !!errors.loanAmount}
                     />
-                    {touched.loanAmount && !errors.loanAmount && formData.loanAmount && (
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 pointer-events-none">
-                        <CheckCircle size={15} />
-                      </motion.div>
-                    )}
+                    {renderValidMark('loanAmount')}
                   </div>
                   {renderErrorMsg('loanAmount')}
                 </div>
@@ -900,8 +882,8 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
               {/* Submit */}
               <button
                 type="submit"
-                disabled={!isFormValid || isSubmitting}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#0B4F9C] via-[#1a5fb4] to-[#0B4F9C] hover:from-[#0a4485] hover:to-[#0a4485] text-white font-bold text-sm shadow-lg shadow-blue-500/15 hover:shadow-blue-500/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group btn-shine"
+                disabled={isSubmitting}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#0B4F9C] via-[#1a5fb4] to-[#0B4F9C] hover:from-[#0a4485] hover:to-[#0a4485] text-white font-bold text-sm shadow-lg shadow-blue-500/15 hover:shadow-blue-500/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed relative overflow-hidden group btn-shine"
               >
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full duration-700" />
                 {isSubmitting ? (
