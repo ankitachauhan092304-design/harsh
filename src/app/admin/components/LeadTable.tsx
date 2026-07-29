@@ -91,20 +91,28 @@ export default function LeadTable({
     setTimeout(() => setCopiedId(null), 1500);
   };
 
-  // Export to CSV
+  // Export to CSV with formula injection sanitization
   const exportToCSV = () => {
+    const sanitizeCSV = (val: any) => {
+      let str = String(val || '').replace(/"/g, '""');
+      if (['=', '+', '-', '@'].includes(str.charAt(0))) {
+        str = "'" + str;
+      }
+      return `"${str}"`;
+    };
+
     const headers = ['Lead Number', 'Name', 'Phone', 'Email', 'City', 'Loan Type', 'Amount (INR)', 'Status', 'Assigned Executive', 'Created At'];
     const rows = filteredLeads.map((l) => [
-      l.leadNumber,
-      `"${l.name}"`,
-      l.phone,
-      l.email || '',
-      `"${l.city}"`,
-      l.loanType,
-      l.loanAmount,
-      l.status,
-      `"${l.assignedTo?.name || 'Unassigned'}"`,
-      new Date(l.createdAt).toLocaleDateString('en-IN'),
+      sanitizeCSV(l.leadNumber),
+      sanitizeCSV(l.name),
+      sanitizeCSV(l.phone),
+      sanitizeCSV(l.email || ''),
+      sanitizeCSV(l.city),
+      sanitizeCSV(l.loanType),
+      sanitizeCSV(l.loanAmount),
+      sanitizeCSV(l.status),
+      sanitizeCSV(l.assignedTo?.name || 'Unassigned'),
+      sanitizeCSV(new Date(l.createdAt).toLocaleDateString('en-IN')),
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
