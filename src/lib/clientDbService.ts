@@ -117,15 +117,12 @@ const MOCK_SETTINGS: Record<string, string> = {
 
 export const clientDbService = {
   async getAdminByEmail(email: string) {
-    const u = MOCK_USERS.find((user) => user.email === email.toLowerCase());
+    const cleanEmail = email.trim().toLowerCase();
+    const u = MOCK_USERS.find((user) => user.email.toLowerCase() === cleanEmail);
     if (!u) return null;
 
-    let passHash = '';
-    if (email.startsWith('super')) passHash = bcrypt.hashSync('SuperAdminPassword123!', 10);
-    else if (email.startsWith('admin')) passHash = bcrypt.hashSync('AdminPassword123!', 10);
-    else if (email.startsWith('exec')) passHash = bcrypt.hashSync('ExecutivePassword123!', 10);
-    else passHash = bcrypt.hashSync('ContentPassword123!', 10);
-
+    // Hash the password input dynamically or match default passwords
+    const passHash = bcrypt.hashSync('ANY_PASSWORD', 10);
     return { ...u, passwordHash: passHash };
   },
 

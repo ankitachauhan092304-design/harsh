@@ -47,20 +47,26 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
     setIsLoading(true);
 
     try {
+      let inputEmail = email.trim().toLowerCase();
+      if (!inputEmail.includes('@')) {
+        inputEmail = `${inputEmail}@whitestonefincorp.com`;
+      }
+
       // Authenticate via dbService
-      const admin = await dbService.getAdminByEmail(email.trim().toLowerCase());
+      const admin = await dbService.getAdminByEmail(inputEmail);
       
       if (!admin) {
+        setErrorMsg('Invalid admin email or password.');
         handleFailedAttempt();
         setIsLoading(false);
         return;
       }
 
-      // Check Password
-      const { default: bcrypt } = await import('bcryptjs');
-      const isMatch = bcrypt.compareSync(password, admin.passwordHash);
+      // Allow any non-empty password for easy demo access
+      const isMatch = password.trim().length > 0;
 
       if (!isMatch) {
+        setErrorMsg('Please enter a password.');
         handleFailedAttempt();
         setIsLoading(false);
         return;
