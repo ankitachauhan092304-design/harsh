@@ -131,7 +131,7 @@ export default function SettingsManager({
             <input
               type="text"
               disabled={!canEdit}
-              value={formData.googleBusinessUrl}
+              value={formData.googleBusinessUrl || ''}
               onChange={(e) => setFormData({ ...formData, googleBusinessUrl: e.target.value })}
               className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-[#0B4F9C]"
             />
@@ -142,11 +142,29 @@ export default function SettingsManager({
             <input
               type="text"
               disabled={!canEdit}
-              value={formData.linkedinUrl}
+              value={formData.linkedinUrl || ''}
               onChange={(e) => setFormData({ ...formData, linkedinUrl: e.target.value })}
               className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-[#0B4F9C]"
             />
           </div>
+        </div>
+
+        {/* Google Apps Script Webhook URL Field */}
+        <div className="p-5 bg-blue-50/60 border border-blue-100 rounded-2xl flex flex-col gap-2">
+          <label className="text-xs font-bold uppercase tracking-wider text-[#0B4F9C] flex items-center gap-1.5">
+            <Globe size={14} /> Google Sheets Apps Script Webhook URL
+          </label>
+          <p className="text-[11px] text-slate-500">
+            Paste your deployed Google Apps Script Web App URL (ending with <code className="bg-white px-1 py-0.5 rounded border border-slate-200 text-slate-700">/exec</code>) to connect live enquiries directly to your Google Sheet database.
+          </p>
+          <input
+            type="url"
+            disabled={!canEdit}
+            value={formData.googleWebhookUrl || ''}
+            onChange={(e) => setFormData({ ...formData, googleWebhookUrl: e.target.value })}
+            placeholder="https://script.google.com/macros/s/.../exec"
+            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-mono font-semibold text-slate-800 outline-none focus:border-[#0B4F9C] focus:ring-2 focus:ring-[#0B4F9C]/10 transition-all"
+          />
         </div>
 
         {canEdit && (
