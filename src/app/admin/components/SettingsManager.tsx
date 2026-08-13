@@ -21,7 +21,7 @@ export default function SettingsManager({
     contactEmail: settings.contactEmail || 'info@whitestonefincorp.com',
     contactAddress: settings.contactAddress || 'Level 14, Supreme Business Park, Hiranandani Gardens, Powai, Mumbai - 400076',
     whatsappNumber: settings.whatsappNumber || '919824975488',
-    googleWebhookUrl: settings.googleWebhookUrl || localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbyc__n3C9_6t3Vz0y7H8sL78xR1yN2vQ95Z6k0M2o4h9G3F5J1wB3N2/exec',
+    googleWebhookUrl: settings.googleWebhookUrl || localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec',
   });
 
   const [isSaving, setIsSaving] = useState(false);

@@ -402,7 +402,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     } catch (err) {}
 
     // Background submit to Google Webhook
-    const targetWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbyc__n3C9_6t3Vz0y7H8sL78xR1yN2vQ95Z6k0M2o4h9G3F5J1wB3N2/exec';
+    const targetWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec';
     
     try {
       const googleParams = new URLSearchParams();

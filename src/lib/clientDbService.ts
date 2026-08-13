@@ -148,7 +148,7 @@ export const clientDbService = {
       } catch (err) {}
     }
 
-    const targetWebhook = (typeof window !== 'undefined' && localStorage.getItem('wf_google_webhook_url')) || 'https://script.google.com/macros/s/AKfycbyc__n3C9_6t3Vz0y7H8sL78xR1yN2vQ95Z6k0M2o4h9G3F5J1wB3N2/exec';
+    const targetWebhook = (typeof window !== 'undefined' && localStorage.getItem('wf_google_webhook_url')) || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec';
     let remoteLeads: Lead[] = [];
     try {
       const res = await fetch(`${targetWebhook}?action=getLeads`, { cache: 'no-store' });

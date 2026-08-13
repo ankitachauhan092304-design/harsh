@@ -1,6 +1,6 @@
 // form.js - Enterprise Static HTML Form Handler for Whitestone Fincorp
 
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyc__n3C9_6t3Vz0y7H8sL78xR1yN2vQ95Z6k0M2o4h9G3F5J1wB3N2/exec'; 
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec'; 
 const DEFAULT_WA_NUMBER = '919824975488';
 
 const GUJARAT_CITIES = [
@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {}
 
         // Background Webhook Post to Google Apps Script
-        const targetWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbyc__n3C9_6t3Vz0y7H8sL78xR1yN2vQ95Z6k0M2o4h9G3F5J1wB3N2/exec';
+        const targetWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec';
         
         try {
             const formData = new URLSearchParams();
