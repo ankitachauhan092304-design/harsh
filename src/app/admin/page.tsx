@@ -71,10 +71,44 @@ export default function AdminPage() {
     }
   }, [user]);
 
+  const [lastSyncTime, setLastSyncTime] = useState<string>('Just Now');
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [newLeadBanner, setNewLeadBanner] = useState<string | null>(null);
+
+  const handleManualRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await loadCRMData();
+    setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    setTimeout(() => setIsRefreshing(false), 400);
+  }, [loadCRMData]);
+
+  // Initial Load & Real-time Live Polling Every 5 Seconds
   useEffect(() => {
-    if (user) {
-      loadCRMData();
-    }
+    if (!user) return;
+    
+    // Initial fetch
+    loadCRMData();
+    setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+
+    // 5-second polling interval
+    const interval = setInterval(async () => {
+      try {
+        const freshLeads = await dbService.getLeads();
+        setLeads((prev) => {
+          if (freshLeads.length > prev.length && prev.length > 0) {
+            const newest = freshLeads[0];
+            setNewLeadBanner(`🎉 Real-Time Alert: New Enquiry Received from ${newest.name} (${newest.phone}) for ₹${newest.loanAmount.toLocaleString('en-IN')}`);
+            setTimeout(() => setNewLeadBanner(null), 8000);
+          }
+          return freshLeads;
+        });
+        setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      } catch (err) {
+        console.warn('Real-time sync notice:', err);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, [user, loadCRMData]);
 
   // Update Activity Timestamp on User Action
@@ -217,7 +251,17 @@ export default function AdminPage() {
           onLogout={handleLogout}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           onSelectTab={(tab) => setActiveTab(tab)}
+          lastSyncTime={lastSyncTime}
+          isRefreshing={isRefreshing}
+          onManualRefresh={handleManualRefresh}
         />
+
+        {newLeadBanner && (
+          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-2.5 shadow-md flex items-center justify-between text-xs font-bold animate-in slide-in-from-top duration-300">
+            <span>{newLeadBanner}</span>
+            <button onClick={() => setNewLeadBanner(null)} className="text-white/80 hover:text-white font-bold ml-4">✕</button>
+          </div>
+        )}
 
         <main className="flex-1 p-4 md:p-8 overflow-y-auto">
           {activeTab === 'dashboard' && (

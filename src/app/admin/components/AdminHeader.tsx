@@ -1,7 +1,5 @@
-'use client';
-
 import React, { useState } from 'react';
-import { Search, Bell, User, LogOut, ShieldCheck, Menu, Building2 } from 'lucide-react';
+import { Search, Bell, User, LogOut, ShieldCheck, Menu, Building2, RefreshCw, Radio } from 'lucide-react';
 import { Role } from '@/types';
 import NotificationPanel, { NotificationItem } from './NotificationPanel';
 
@@ -12,6 +10,9 @@ interface AdminHeaderProps {
   onLogout: () => void;
   onToggleSidebar: () => void;
   onSelectTab: (tab: string) => void;
+  lastSyncTime?: string;
+  isRefreshing?: boolean;
+  onManualRefresh?: () => void;
 }
 
 export default function AdminHeader({
@@ -21,32 +22,19 @@ export default function AdminHeader({
   onLogout,
   onToggleSidebar,
   onSelectTab,
+  lastSyncTime = 'Just Now',
+  isRefreshing = false,
+  onManualRefresh,
 }: AdminHeaderProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
       id: 'n1',
-      title: 'New Lead Captured',
-      message: 'Amit Patel submitted a Personal Loan enquiry for ₹5,00,000.',
-      time: '10m ago',
+      title: 'Realtime Data Sync Active',
+      message: 'Google Sheets & Local Database auto-sync every 5 seconds.',
+      time: 'Live',
       type: 'LEAD',
       read: false,
-    },
-    {
-      id: 'n2',
-      title: 'Follow-up Overdue',
-      message: 'Priya Sharma home loan documentation follow-up is overdue.',
-      time: '1h ago',
-      type: 'REMINDER',
-      read: false,
-    },
-    {
-      id: 'n3',
-      title: 'Blog Published',
-      message: '5 Crucial Tips to Boost Your Credit Score Fast is now live.',
-      time: '3h ago',
-      type: 'BLOG',
-      read: true,
     },
   ]);
 
@@ -102,6 +90,23 @@ export default function AdminHeader({
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Real-time Sync Badge */}
+        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200/60 rounded-xl text-emerald-700 text-xs font-bold">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span>LIVE DATA (5s Auto-Sync)</span>
+          {onManualRefresh && (
+            <button
+              onClick={onManualRefresh}
+              title="Click to sync now"
+              className="ml-1 p-1 hover:bg-emerald-100 rounded-lg transition-colors cursor-pointer"
+            >
+              <RefreshCw size={13} className={`${isRefreshing ? 'animate-spin text-emerald-600' : 'text-emerald-500'}`} />
+            </button>
+          )}
+        </div>
         {/* Notification Bell */}
         <div className="relative">
           <button
