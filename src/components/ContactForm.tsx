@@ -629,7 +629,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                       value={formData.name}
                       onChange={handleInputChange}
                       onBlur={() => handleBlur('name')}
-                      placeholder="e.g. Harsh Parmar"
+                      placeholder="Enter your full name"
                       maxLength={60}
                       className={fieldClass('name')}
                       aria-invalid={touched.name && !!errors.name}
@@ -653,7 +653,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                       value={formData.phone}
                       onChange={handleInputChange}
                       onBlur={() => handleBlur('phone')}
-                      placeholder="98249 75488"
+                      placeholder="Enter 10-digit mobile number"
                       maxLength={10}
                       className={`${fieldClass('phone')} pl-12`}
                       aria-invalid={touched.phone && !!errors.phone}
@@ -678,7 +678,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                       value={formData.email}
                       onChange={handleInputChange}
                       onBlur={() => handleBlur('email')}
-                      placeholder="name@example.com"
+                      placeholder="Enter email address"
                       className={fieldClass('email')}
                       aria-invalid={touched.email && !!errors.email}
                     />
@@ -702,7 +702,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                       onFocus={() => setShowCityDropdown(true)}
                       onBlur={() => handleBlur('city')}
                       onKeyDown={handleCityKeyDown}
-                      placeholder="e.g. Ahmedabad, Surat"
+                      placeholder="Select or enter city"
                       className={fieldClass('city')}
                       autoComplete="off"
                       aria-autocomplete="list"
@@ -782,7 +782,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                       value={formData.loanAmount ? formatIndianCurrency(formData.loanAmount) : ''}
                       onChange={handleInputChange}
                       onBlur={() => handleBlur('loanAmount')}
-                      placeholder="e.g. 5,00,000"
+                      placeholder="Enter required loan amount"
                       className={`${fieldClass('loanAmount')} pl-8`}
                       aria-invalid={touched.loanAmount && !!errors.loanAmount}
                     />
@@ -806,7 +806,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                   onChange={handleInputChange}
                   rows={3}
                   maxLength={500}
-                  placeholder="Share credit history, turnover, or other details to help us find the best match..."
+                  placeholder="Enter any special requirements or details..."
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-medium outline-none focus:border-[#0B4F9C] focus:ring-2 focus:ring-[#0B4F9C]/10 transition-all resize-none placeholder:text-slate-300"
                 />
               </div>

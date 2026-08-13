@@ -177,7 +177,7 @@ export default function ConversionWidgets() {
                       maxLength={60}
                       value={callbackName}
                       onChange={(e) => setCallbackName(e.target.value.replace(/[^a-zA-Z\s\.\-']/g, '').slice(0, 60))}
-                      placeholder="e.g. Harsh Parmar"
+                      placeholder="Enter your full name"
                       className="px-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#0B4F9C] focus:bg-white outline-none rounded-xl text-xs font-semibold transition-all"
                     />
                   </div>
