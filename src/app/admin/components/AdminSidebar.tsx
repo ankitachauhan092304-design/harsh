@@ -4,7 +4,7 @@ import React from 'react';
 import {
   LayoutDashboard, Users, GitBranch, Calendar,
   FileText, Shield, Settings, User, LogOut,
-  Building2, ChevronRight, X, Sparkles,
+  Building2, ChevronRight, X, Sparkles, Eye,
 } from 'lucide-react';
 import { Role } from '@/types';
 
@@ -39,6 +39,12 @@ export default function AdminSidebar({
       label: 'Lead Management',
       icon: Users,
       roles: ['SUPER_ADMIN', 'ADMIN', 'LOAN_EXECUTIVE', 'VIEWER'],
+    },
+    {
+      id: 'analytics',
+      label: 'Visitor Analytics',
+      icon: Eye,
+      roles: ['SUPER_ADMIN', 'ADMIN', 'VIEWER'],
     },
     {
       id: 'pipeline',

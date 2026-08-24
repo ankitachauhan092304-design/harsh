@@ -29,6 +29,59 @@ function sanitizeInput(str) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Automatic Visitor Telemetry Tracking
+    (function trackVisitor() {
+        try {
+            let sid = sessionStorage.getItem('wf_visitor_sid');
+            if (!sid) {
+                sid = 'sid-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7);
+                sessionStorage.setItem('wf_visitor_sid', sid);
+            }
+            const currentPath = window.location.pathname || '/';
+            const pageTitle = document.title || 'Whitestone Fincorp';
+            const ua = navigator.userAgent || '';
+            const device = /Mobile|iP(hone|od)|Android/i.test(ua) ? 'MOBILE' : 'DESKTOP';
+            const browser = ua.includes('Chrome') ? 'Chrome' : ua.includes('Safari') ? 'Safari' : 'Browser';
+            const os = ua.includes('Android') ? 'Android' : ua.includes('iPhone') ? 'iOS' : ua.includes('Mac') ? 'macOS' : 'Windows';
+            const referrer = document.referrer || 'Direct / Search';
+
+            const localLog = {
+                id: 'vlog-' + Date.now(),
+                sessionId: sid,
+                timestamp: new Date().toISOString(),
+                path: currentPath,
+                pageTitle: pageTitle,
+                device: device,
+                browser: browser,
+                os: os,
+                referrer: referrer,
+                location: 'Gujarat, IN'
+            };
+
+            const storedLogs = JSON.parse(localStorage.getItem('wf_visitor_logs') || '[]');
+            storedLogs.unshift(localLog);
+            localStorage.setItem('wf_visitor_logs', JSON.stringify(storedLogs.slice(0, 200)));
+
+            const targetWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec';
+            const params = new URLSearchParams();
+            params.append('action', 'logVisitor');
+            params.append('sessionId', sid);
+            params.append('path', currentPath);
+            params.append('pageTitle', pageTitle);
+            params.append('device', device);
+            params.append('browser', browser);
+            params.append('os', os);
+            params.append('referrer', referrer);
+
+            fetch(targetWebhook, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: params,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            }).catch(function() {});
+        } catch (e) {}
+    })();
+
     const contactForm = document.getElementById('contactForm') || document.querySelector('form');
     if (!contactForm) return;
 

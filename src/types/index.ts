@@ -90,8 +90,33 @@ export interface FAQ {
   question: string;
   answer: string;
   category: string;
-  createdAt: string;
-  updatedAt: string;
+  order?: number;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface VisitorLog {
+  id: string;
+  sessionId: string;
+  timestamp: string;
+  path: string;
+  pageTitle: string;
+  device: 'MOBILE' | 'DESKTOP' | 'TABLET';
+  browser: string;
+  os: string;
+  referrer: string;
+  location?: string;
+  ip?: string;
+}
+
+export interface VisitorAnalytics {
+  totalPageviews: number;
+  uniqueVisitors: number;
+  visitorsToday: number;
+  mobileSharePercent: number;
+  recentVisitors: VisitorLog[];
+  topPages: { path: string; count: number }[];
+  referrerSources: { source: string; count: number }[];
 }
 
 export interface Testimonial {

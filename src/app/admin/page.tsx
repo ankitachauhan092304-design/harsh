@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Role, Lead, AdminUser, BlogPost, AuditLog } from '@/types';
+import { Role, Lead, AdminUser, BlogPost, AuditLog, VisitorAnalytics as IVisitorAnalytics } from '@/types';
 import { clientDbService as dbService } from '@/lib/clientDbService';
 import AdminLogin from './components/AdminLogin';
 import AdminHeader from './components/AdminHeader';
@@ -13,6 +13,7 @@ import LeadDetailModal from './components/LeadDetailModal';
 import BlogManager from './components/BlogManager';
 import AuditLogViewer from './components/AuditLogViewer';
 import SettingsManager from './components/SettingsManager';
+import VisitorAnalytics from './components/VisitorAnalytics';
 
 export default function AdminPage() {
   const [user, setUser] = useState<{ id: string; email: string; name: string; role: Role } | null>(null);
@@ -27,6 +28,7 @@ export default function AdminPage() {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({});
+  const [visitorAnalytics, setVisitorAnalytics] = useState<IVisitorAnalytics | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   // Initial Auth & Data Hydration
@@ -60,12 +62,14 @@ export default function AdminPage() {
       const fetchedBlogs = await dbService.getBlogPosts();
       const fetchedLogs = await dbService.getAuditLogs();
       const fetchedSettings = await dbService.getSettings();
+      const fetchedAnalytics = await dbService.getVisitorAnalytics();
 
       setLeads(fetchedLeads);
       setExecutives(fetchedAdmins as AdminUser[]);
       setBlogs(fetchedBlogs as unknown as BlogPost[]);
       setAuditLogs(fetchedLogs);
       setSettings(fetchedSettings);
+      setVisitorAnalytics(fetchedAnalytics);
     } catch (err) {
       console.error('Data load error:', err);
     }
@@ -297,6 +301,14 @@ export default function AdminPage() {
               onCreateBlog={handleCreateBlog}
               onUpdateBlog={handleUpdateBlog}
               onDeleteBlog={handleDeleteBlog}
+            />
+          )}
+
+          {activeTab === 'analytics' && (
+            <VisitorAnalytics
+              analytics={visitorAnalytics}
+              onRefresh={handleManualRefresh}
+              isRefreshing={isRefreshing}
             />
           )}
 

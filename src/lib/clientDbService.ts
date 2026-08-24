@@ -1,5 +1,5 @@
 // clientDbService.ts - Client-side database service for Admin Portal
-import { Role, BlogPost, Lead, AdminUser, FAQ } from '../types';
+import { Role, BlogPost, Lead, AdminUser, FAQ, VisitorLog, VisitorAnalytics } from '../types';
 import bcrypt from 'bcryptjs';
 
 const MOCK_USERS = [
@@ -188,6 +188,68 @@ export const clientDbService = {
     const merged = [...remoteLeads, ...unmergedLocal];
 
     return merged.filter((l) => !l.isDeleted);
+  },
+
+  async getVisitorAnalytics(): Promise<VisitorAnalytics> {
+    let localLogs: VisitorLog[] = [];
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('wf_visitor_logs');
+        if (stored) localLogs = JSON.parse(stored);
+      } catch (err) {}
+    }
+
+    const targetWebhook = (typeof window !== 'undefined' && localStorage.getItem('wf_google_webhook_url')) || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec';
+    let remoteLogs: VisitorLog[] = [];
+
+    try {
+      const res = await fetch(`${targetWebhook}?action=getVisitorAnalytics`, { cache: 'no-store' });
+      if (res.ok) {
+        const json = await res.json();
+        if (json && json.status === 'SUCCESS' && Array.isArray(json.visitors)) {
+          remoteLogs = json.visitors;
+        }
+      }
+    } catch (err) {}
+
+    const combined = [...remoteLogs, ...localLogs];
+    const uniqueIds = new Set(combined.map((v) => v.sessionId || v.id));
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayLogs = combined.filter((v) => (v.timestamp || '').startsWith(todayStr));
+    const mobileCount = combined.filter((v) => v.device === 'MOBILE').length;
+    const mobileShare = combined.length > 0 ? Math.round((mobileCount / combined.length) * 100) : 50;
+
+    const pageCounts: Record<string, number> = {};
+    combined.forEach((v) => {
+      const p = v.path || '/';
+      pageCounts[p] = (pageCounts[p] || 0) + 1;
+    });
+
+    const topPages = Object.entries(pageCounts)
+      .map(([path, count]) => ({ path, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    const refCounts: Record<string, number> = {};
+    combined.forEach((v) => {
+      const r = v.referrer || 'Direct / Search';
+      refCounts[r] = (refCounts[r] || 0) + 1;
+    });
+
+    const referrerSources = Object.entries(refCounts)
+      .map(([source, count]) => ({ source, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    return {
+      totalPageviews: combined.length || 1,
+      uniqueVisitors: uniqueIds.size || 1,
+      visitorsToday: todayLogs.length || 1,
+      mobileSharePercent: mobileShare,
+      recentVisitors: combined.slice(0, 50),
+      topPages,
+      referrerSources,
+    };
   },
 
   async getLeadById(id: string) {
