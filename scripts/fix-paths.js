@@ -91,11 +91,9 @@ for (const filePath of htmlFiles) {
   content = content.replace(/href="\.\/contact\?type=apply\.html"/g, `href="${prefix}contact.html"`);
   content = content.replace(/href="\.\.\/contact\?type=apply\.html"/g, `href="${prefix}contact.html"`);
 
-  // Remove opacity:0 and transform inline styles (from Framer Motion initial state)
-  content = content.replace(/ style="opacity:0;transform:translateY\([^"]*\)"/g, '');
-  content = content.replace(/ style="opacity:0;transform:translateX\([^"]*\)"/g, '');
-  content = content.replace(/ style="opacity:0"/g, '');
-  content = content.replace(/ style="opacity:0;transform:scale\([^"]*\)"/g, '');
+  // Remove opacity:0 and transform inline styles (from Framer Motion initial state) so content is 100% visible immediately
+  content = content.replace(/\s*style="[^"]*opacity:\s*0[^"]*"/gi, '');
+  content = content.replace(/\s*style="opacity:\s*0[^"]*"/gi, '');
 
   if (content !== original) {
     fs.writeFileSync(filePath, content, 'utf8');
