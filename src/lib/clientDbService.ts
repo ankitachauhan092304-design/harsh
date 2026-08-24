@@ -118,10 +118,22 @@ const MOCK_SETTINGS: Record<string, string> = {
 export const clientDbService = {
   async getAdminByEmail(email: string) {
     const cleanEmail = email.trim().toLowerCase();
-    const u = MOCK_USERS.find((user) => user.email.toLowerCase() === cleanEmail);
-    if (!u) return null;
+    let u = MOCK_USERS.find((user) => user.email.toLowerCase() === cleanEmail);
+    if (!u) {
+      // Dynamically grant access for any admin email or username typed by the user
+      const role: Role = cleanEmail.includes('super') ? 'SUPER_ADMIN' : 'ADMIN';
+      const name = cleanEmail.split('@')[0].toUpperCase();
+      u = {
+        id: 'u-custom-' + Date.now(),
+        email: cleanEmail.includes('@') ? cleanEmail : `${cleanEmail}@whitestonefincorp.com`,
+        name: name,
+        role: role,
+        status: 'ACTIVE',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
 
-    // Hash the password input dynamically or match default passwords
     const passHash = bcrypt.hashSync('ANY_PASSWORD', 10);
     return { ...u, passwordHash: passHash };
   },
