@@ -28,6 +28,11 @@ fs.copyFileSync(path.join(__dirname, 'calculators.js'), path.join(chunksDir, 'wf
 fs.copyFileSync(path.join(__dirname, 'credit-score.js'), path.join(chunksDir, 'wf-credit-score.js'));
 console.log('✅ Helper JS scripts copied into out/_next/static/chunks/');
 
+// Guarantee .nojekyll and CNAME exist in out/ directory for GitHub Pages static serving
+fs.writeFileSync(path.join(OUT, '.nojekyll'), '# Disable GitHub Pages Jekyll processing\n');
+fs.writeFileSync(path.join(OUT, 'CNAME'), 'www.whitestonefincorp.com\n');
+console.log('✅ Created .nojekyll and CNAME in out/');
+
 function getAllHtml(dir, list = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, e.name);
