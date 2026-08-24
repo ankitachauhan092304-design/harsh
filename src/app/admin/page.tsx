@@ -94,10 +94,11 @@ export default function AdminPage() {
     loadCRMData();
     setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
 
-    // 5-second polling interval
+    // 5-second polling interval for real-time live sync
     const interval = setInterval(async () => {
       try {
         const freshLeads = await dbService.getLeads();
+        const freshAnalytics = await dbService.getVisitorAnalytics();
         setLeads((prev) => {
           if (freshLeads.length > prev.length && prev.length > 0) {
             const newest = freshLeads[0];
@@ -106,6 +107,7 @@ export default function AdminPage() {
           }
           return freshLeads;
         });
+        setVisitorAnalytics(freshAnalytics);
         setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
       } catch (err) {
         console.warn('Real-time sync notice:', err);

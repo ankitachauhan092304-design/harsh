@@ -28,8 +28,8 @@ export default function VisitorCounterBadge({ variant = 'floating', className = 
     };
 
     updateCounts();
-    // Refresh counter every 10s
-    const interval = setInterval(updateCounts, 10000);
+    // Refresh real-time live counter every 3s
+    const interval = setInterval(updateCounts, 3000);
     return () => {
       isMounted = false;
       clearInterval(interval);
