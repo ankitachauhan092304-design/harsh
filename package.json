@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build --webpack",
+    "deploy": "npm run build && node scripts/finalize-all-pages.js && node scripts/fix-paths.js && rsync -av --delete out/ website/ && npx gh-pages -d website",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate"
