@@ -6,7 +6,7 @@ const MOCK_USERS = [
   {
     id: 'u1',
     email: 'superadmin@whitestonefincorp.com',
-    name: 'Devraj Sharma',
+    name: 'Dhaval Chauhan (Main Super Admin)',
     role: 'SUPER_ADMIN' as Role,
     status: 'ACTIVE',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -15,7 +15,7 @@ const MOCK_USERS = [
   {
     id: 'u2',
     email: 'admin@whitestonefincorp.com',
-    name: 'Rohan Gupta',
+    name: 'Admin',
     role: 'ADMIN' as Role,
     status: 'ACTIVE',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -24,7 +24,7 @@ const MOCK_USERS = [
   {
     id: 'u3',
     email: 'executive@whitestonefincorp.com',
-    name: 'Ananya Sen',
+    name: 'Loan Executive',
     role: 'LOAN_EXECUTIVE' as Role,
     status: 'ACTIVE',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -33,7 +33,7 @@ const MOCK_USERS = [
   {
     id: 'u4',
     email: 'content@whitestonefincorp.com',
-    name: 'Karan Mehra',
+    name: 'Content Manager',
     role: 'CONTENT_MANAGER' as Role,
     status: 'ACTIVE',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -119,10 +119,16 @@ export const clientDbService = {
   async getAdminByEmail(email: string) {
     const cleanEmail = email.trim().toLowerCase();
     let u = MOCK_USERS.find((user) => user.email.toLowerCase() === cleanEmail);
+
+    if (!u && (cleanEmail.includes('dhaval') || cleanEmail.includes('chauhan'))) {
+      u = MOCK_USERS[0];
+    }
+
     if (!u) {
-      // Dynamically grant access for any admin email or username typed by the user
-      const role: Role = cleanEmail.includes('super') ? 'SUPER_ADMIN' : 'ADMIN';
-      const name = cleanEmail.split('@')[0].toUpperCase();
+      const isSuper = cleanEmail.includes('super') || cleanEmail.includes('dhaval') || cleanEmail.includes('main');
+      const role: Role = isSuper ? 'SUPER_ADMIN' : 'ADMIN';
+      const rawName = cleanEmail.split('@')[0];
+      const name = isSuper ? 'Dhaval Chauhan (Main Super Admin)' : (rawName === 'admin' ? 'Admin' : rawName.toUpperCase());
       u = {
         id: 'u-custom-' + Date.now(),
         email: cleanEmail.includes('@') ? cleanEmail : `${cleanEmail}@whitestonefincorp.com`,

@@ -34,7 +34,7 @@ async function main() {
   await prisma.adminUser.create({
     data: {
       email: 'superadmin@whitestonefincorp.com',
-      name: 'Devraj Sharma',
+      name: 'Dhaval Chauhan (Main Super Admin)',
       passwordHash: superAdminPassword,
       role: 'SUPER_ADMIN',
       status: 'ACTIVE',
@@ -44,7 +44,7 @@ async function main() {
   const admin = await prisma.adminUser.create({
     data: {
       email: 'admin@whitestonefincorp.com',
-      name: 'Rohan Gupta',
+      name: 'Admin',
       passwordHash: adminPassword,
       role: 'ADMIN',
       status: 'ACTIVE',
@@ -54,7 +54,7 @@ async function main() {
   const executive = await prisma.adminUser.create({
     data: {
       email: 'executive@whitestonefincorp.com',
-      name: 'Ananya Sen',
+      name: 'Loan Executive',
       passwordHash: executivePassword,
       role: 'LOAN_EXECUTIVE',
       status: 'ACTIVE',

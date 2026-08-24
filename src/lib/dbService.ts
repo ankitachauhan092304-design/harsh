@@ -288,15 +288,15 @@ const MOCK_SETTINGS: Record<string, string> = {
 };
 
 const MOCK_AUDIT_LOGS = [
-  { id: 'log-1', username: 'Devraj Sharma', action: 'LOGIN', details: 'User logged in successfully.', createdAt: new Date(Date.now() - 3600000 * 2).toISOString() },
-  { id: 'log-2', username: 'Ananya Sen', action: 'LEAD_UPDATE', details: 'Updated Lead Amit Patel status from NEW to CONTACTED.', createdAt: new Date(Date.now() - 3600000).toISOString() }
+  { id: 'log-1', username: 'Dhaval Chauhan (Main Super Admin)', action: 'LOGIN', details: 'User logged in successfully.', createdAt: new Date(Date.now() - 3600000 * 2).toISOString() },
+  { id: 'log-2', username: 'Admin', action: 'LEAD_UPDATE', details: 'Updated Lead status from NEW to CONTACTED.', createdAt: new Date(Date.now() - 3600000).toISOString() }
 ];
 
 const MOCK_USERS: AdminUser[] = [
-  { id: 'u1', email: 'superadmin@whitestonefincorp.com', name: 'Devraj Sharma', role: 'SUPER_ADMIN' as const, status: 'ACTIVE' as const, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: 'u2', email: 'admin@whitestonefincorp.com', name: 'Rohan Gupta', role: 'ADMIN' as const, status: 'ACTIVE' as const, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: 'u3', email: 'executive@whitestonefincorp.com', name: 'Ananya Sen', role: 'LOAN_EXECUTIVE' as const, status: 'ACTIVE' as const, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: 'u4', email: 'content@whitestonefincorp.com', name: 'Karan Mehra', role: 'CONTENT_MANAGER' as const, status: 'ACTIVE' as const, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+  { id: 'u1', email: 'superadmin@whitestonefincorp.com', name: 'Dhaval Chauhan (Main Super Admin)', role: 'SUPER_ADMIN' as const, status: 'ACTIVE' as const, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: 'u2', email: 'admin@whitestonefincorp.com', name: 'Admin', role: 'ADMIN' as const, status: 'ACTIVE' as const, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: 'u3', email: 'executive@whitestonefincorp.com', name: 'Loan Executive', role: 'LOAN_EXECUTIVE' as const, status: 'ACTIVE' as const, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+  { id: 'u4', email: 'content@whitestonefincorp.com', name: 'Content Manager', role: 'CONTENT_MANAGER' as const, status: 'ACTIVE' as const, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
 ];
 
 // Helper to check DB connection
