@@ -106,6 +106,9 @@ export interface VisitorLog {
   os: string;
   referrer: string;
   location?: string;
+  region?: string;
+  city?: string;
+  country?: string;
   ip?: string;
 }
 
@@ -117,6 +120,8 @@ export interface VisitorAnalytics {
   recentVisitors: VisitorLog[];
   topPages: { path: string; count: number }[];
   referrerSources: { source: string; count: number }[];
+  regionBreakdown: { region: string; count: number; percentage: number }[];
+  cityBreakdown: { city: string; region: string; count: number }[];
 }
 
 export interface Testimonial {

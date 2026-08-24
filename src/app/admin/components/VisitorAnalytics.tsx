@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Eye, Users, Calendar, Smartphone, Laptop, Globe, RefreshCw, ArrowUpRight, ShieldCheck, MapPin, Compass } from 'lucide-react';
+import { Eye, Users, Calendar, Smartphone, Laptop, Globe, RefreshCw, ArrowUpRight, MapPin, Compass, Map, Navigation } from 'lucide-react';
 import { VisitorAnalytics as IVisitorAnalytics } from '@/types';
 
 interface VisitorAnalyticsProps {
@@ -20,7 +20,17 @@ export default function VisitorAnalytics({ analytics, onRefresh, isRefreshing }:
     );
   }
 
-  const { totalPageviews, uniqueVisitors, visitorsToday, mobileSharePercent, recentVisitors, topPages, referrerSources } = analytics;
+  const {
+    totalPageviews,
+    uniqueVisitors,
+    visitorsToday,
+    mobileSharePercent,
+    recentVisitors,
+    topPages,
+    referrerSources,
+    regionBreakdown = [],
+    cityBreakdown = [],
+  } = analytics;
 
   return (
     <div className="flex flex-col gap-6">
@@ -32,11 +42,11 @@ export default function VisitorAnalytics({ analytics, onRefresh, isRefreshing }:
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </span>
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Realtime Website Analytics</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Realtime Geolocation & Website Analytics</span>
           </div>
-          <h2 className="text-xl md:text-2xl font-bold font-poppins mt-1">Live Visitor Counter & Traffic Intelligence</h2>
+          <h2 className="text-xl md:text-2xl font-bold font-poppins mt-1">Region-Wise Visitor Counter & Traffic Intelligence</h2>
           <p className="text-xs text-slate-300 mt-1 max-w-xl">
-            Track live website sessions, device distribution, top visited pages, and referral sources in real-time.
+            Track live website sessions, region & city location distribution, device categories, and top visited pages.
           </p>
         </div>
 
@@ -116,7 +126,81 @@ export default function VisitorAnalytics({ analytics, onRefresh, isRefreshing }:
         </div>
       </div>
 
-      {/* Middle Row: Top Pages & Referrers */}
+      {/* NEW: Region-Wise & City-Wise Location Intelligence Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Region / State-Wise Distribution */}
+        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-slate-800 font-poppins flex items-center gap-2">
+              <Map size={16} className="text-rose-600" /> Region / State-Wise Views
+            </h3>
+            <span className="text-[10px] font-bold text-slate-400 uppercase">Share %</span>
+          </div>
+
+          <div className="flex flex-col gap-3.5">
+            {regionBreakdown.length > 0 ? (
+              regionBreakdown.map((item, idx) => (
+                <div key={idx} className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span className="text-slate-800 flex items-center gap-1.5">
+                      <MapPin size={13} className="text-rose-500" />
+                      <span>{item.region}</span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-500 font-mono text-[11px]">{item.count} views</span>
+                      <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold text-[10px]">
+                        {item.percentage}%
+                      </span>
+                    </div>
+                  </div>
+                  {/* Progress Bar */}
+                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-rose-500 to-amber-500 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.max(item.percentage, 5)}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-xs text-slate-400 py-4 text-center">No region data logged yet.</div>
+            )}
+          </div>
+        </div>
+
+        {/* City-Wise Distribution */}
+        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-slate-800 font-poppins flex items-center gap-2">
+              <Navigation size={16} className="text-blue-600" /> Top Visiting Cities
+            </h3>
+            <span className="text-[10px] font-bold text-slate-400 uppercase">Visits</span>
+          </div>
+
+          <div className="flex flex-col gap-3 divide-y divide-slate-50">
+            {cityBreakdown.length > 0 ? (
+              cityBreakdown.map((item, idx) => (
+                <div key={idx} className="pt-2.5 first:pt-0 flex items-center justify-between text-xs font-semibold">
+                  <div className="flex items-center gap-2 truncate max-w-xs">
+                    <span className="w-5 h-5 rounded-full bg-blue-50 text-blue-700 font-bold text-[10px] flex items-center justify-center">
+                      {idx + 1}
+                    </span>
+                    <span className="text-slate-800 font-bold">{item.city}</span>
+                    <span className="text-slate-400 text-[11px] font-normal">({item.region})</span>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0B4F9C] font-bold text-[11px]">
+                    {item.count} sessions
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="text-xs text-slate-400 py-4 text-center">No city data logged yet.</div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Pages & Referrers Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Visited Pages */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs flex flex-col gap-4">
@@ -176,9 +260,9 @@ export default function VisitorAnalytics({ analytics, onRefresh, isRefreshing }:
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-slate-800 font-poppins flex items-center gap-2">
-              <Users size={16} className="text-emerald-600" /> Live Visitor Activity Log
+              <Users size={16} className="text-emerald-600" /> Live Visitor Activity & Geolocation Log
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">Showing recent visitor session details and page loads</p>
+            <p className="text-xs text-slate-400 mt-0.5">Showing live session details, location, and page visits</p>
           </div>
           <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Live Stream
@@ -194,7 +278,7 @@ export default function VisitorAnalytics({ analytics, onRefresh, isRefreshing }:
                 <th className="py-3 px-6">Device</th>
                 <th className="py-3 px-6">Browser & OS</th>
                 <th className="py-3 px-6">Referrer</th>
-                <th className="py-3 px-6">Location</th>
+                <th className="py-3 px-6">Visitor Location & Region</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -225,9 +309,9 @@ export default function VisitorAnalytics({ analytics, onRefresh, isRefreshing }:
                     <td className="py-3.5 px-6 text-slate-500 truncate max-w-xs">
                       {v.referrer || 'Direct / Search'}
                     </td>
-                    <td className="py-3.5 px-6 text-slate-600 font-medium whitespace-nowrap flex items-center gap-1">
-                      <MapPin size={12} className="text-rose-500" />
-                      <span>{v.location || 'Gujarat, India'}</span>
+                    <td className="py-3.5 px-6 text-slate-700 font-semibold whitespace-nowrap flex items-center gap-1.5">
+                      <MapPin size={13} className="text-rose-500 shrink-0" />
+                      <span>{v.location || (v.city ? `${v.city}, ${v.region}, ${v.country || 'India'}` : 'Gujarat, India')}</span>
                     </td>
                   </tr>
                 ))

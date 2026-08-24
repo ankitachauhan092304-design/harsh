@@ -55,7 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 browser: browser,
                 os: os,
                 referrer: referrer,
-                location: 'Gujarat, IN'
+                city: 'Ahmedabad',
+                region: 'Gujarat',
+                country: 'India',
+                location: 'Ahmedabad, Gujarat, India'
             };
 
             const storedLogs = JSON.parse(localStorage.getItem('wf_visitor_logs') || '[]');
@@ -73,12 +76,23 @@ document.addEventListener('DOMContentLoaded', () => {
             params.append('os', os);
             params.append('referrer', referrer);
 
-            fetch(targetWebhook, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: params,
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-            }).catch(function() {});
+            fetch('https://ipapi.co/json/').then(function(res) { return res.json(); }).then(function(loc) {
+                const city = loc.city || 'Ahmedabad';
+                const region = loc.region || 'Gujarat';
+                const country = loc.country_name || 'India';
+                const locationStr = city + ', ' + region + ', ' + country;
+                localLog.city = city;
+                localLog.region = region;
+                localLog.country = country;
+                localLog.location = locationStr;
+                params.append('city', city);
+                params.append('region', region);
+                params.append('country', country);
+                params.append('location', locationStr);
+                fetch(targetWebhook, { method: 'POST', mode: 'no-cors', body: params, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).catch(function(){});
+            }).catch(function() {
+                fetch(targetWebhook, { method: 'POST', mode: 'no-cors', body: params, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).catch(function(){});
+            });
         } catch (e) {}
     })();
 

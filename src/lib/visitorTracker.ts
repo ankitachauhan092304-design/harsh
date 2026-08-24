@@ -1,7 +1,14 @@
 /**
- * visitorTracker.ts - Live Website Visitor Analytics & Telemetry Tracker
+ * visitorTracker.ts - Live Website Visitor Analytics & Telemetry Tracker with IP Geolocation
  */
 import { DEFAULT_GOOGLE_WEBHOOK_URL } from '@/config/crmConfig';
+
+interface LocationData {
+  city: string;
+  region: string;
+  country: string;
+  locationStr: string;
+}
 
 function getSessionId(): string {
   if (typeof window === 'undefined') return 'sess-server';
@@ -42,7 +49,46 @@ function detectOS(): string {
   return 'OS';
 }
 
-export function trackVisitorPageView(pathName?: string) {
+async function fetchVisitorLocation(): Promise<LocationData> {
+  if (typeof window === 'undefined') {
+    return { city: 'Ahmedabad', region: 'Gujarat', country: 'India', locationStr: 'Ahmedabad, Gujarat, India' };
+  }
+
+  try {
+    const cached = sessionStorage.getItem('wf_visitor_location');
+    if (cached) return JSON.parse(cached);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+    const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const data = await res.json();
+      const city = data.city || 'Ahmedabad';
+      const region = data.region || 'Gujarat';
+      const country = data.country_name || 'India';
+      const loc: LocationData = {
+        city,
+        region,
+        country,
+        locationStr: `${city}, ${region}, ${country}`,
+      };
+      sessionStorage.setItem('wf_visitor_location', JSON.stringify(loc));
+      return loc;
+    }
+  } catch (e) {}
+
+  return {
+    city: 'Ahmedabad',
+    region: 'Gujarat',
+    country: 'India',
+    locationStr: 'Ahmedabad, Gujarat, India',
+  };
+}
+
+export async function trackVisitorPageView(pathName?: string) {
   if (typeof window === 'undefined') return;
 
   try {
@@ -52,7 +98,8 @@ export function trackVisitorPageView(pathName?: string) {
     const device = detectDevice();
     const browser = detectBrowser();
     const os = detectOS();
-    const referrer = document.referrer || 'Direct / Bookmark';
+    const referrer = document.referrer || 'Direct / Search';
+    const loc = await fetchVisitorLocation();
 
     // Store local log for immediate display in Admin CRM
     const localLog = {
@@ -65,13 +112,15 @@ export function trackVisitorPageView(pathName?: string) {
       browser,
       os,
       referrer,
-      location: 'Gujarat, IN',
+      location: loc.locationStr,
+      city: loc.city,
+      region: loc.region,
+      country: loc.country,
     };
 
     try {
       const storedLogs = JSON.parse(localStorage.getItem('wf_visitor_logs') || '[]');
       storedLogs.unshift(localLog);
-      // Keep last 200 logs
       localStorage.setItem('wf_visitor_logs', JSON.stringify(storedLogs.slice(0, 200)));
     } catch (e) {}
 
@@ -86,6 +135,10 @@ export function trackVisitorPageView(pathName?: string) {
     bodyParams.append('browser', browser);
     bodyParams.append('os', os);
     bodyParams.append('referrer', referrer);
+    bodyParams.append('city', loc.city);
+    bodyParams.append('region', loc.region);
+    bodyParams.append('country', loc.country);
+    bodyParams.append('location', loc.locationStr);
 
     fetch(targetWebhook, {
       method: 'POST',

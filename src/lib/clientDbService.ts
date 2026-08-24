@@ -259,6 +259,34 @@ export const clientDbService = {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
+    const regionCounts: Record<string, number> = {};
+    const cityMap: Record<string, { city: string; region: string; count: number }> = {};
+
+    combined.forEach((v) => {
+      const reg = v.region || (v.location?.includes('Gujarat') ? 'Gujarat' : 'Gujarat');
+      const city = v.city || (v.location?.split(',')[0] || 'Ahmedabad');
+      regionCounts[reg] = (regionCounts[reg] || 0) + 1;
+
+      const cityKey = `${city}-${reg}`;
+      if (!cityMap[cityKey]) {
+        cityMap[cityKey] = { city, region: reg, count: 0 };
+      }
+      cityMap[cityKey].count += 1;
+    });
+
+    const totalViews = combined.length || 1;
+    const regionBreakdown = Object.entries(regionCounts)
+      .map(([region, count]) => ({
+        region,
+        count,
+        percentage: Math.round((count / totalViews) * 100) || 100,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const cityBreakdown = Object.values(cityMap)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
     return {
       totalPageviews: combined.length || 1,
       uniqueVisitors: uniqueIds.size || 1,
@@ -267,6 +295,8 @@ export const clientDbService = {
       recentVisitors: combined.slice(0, 50),
       topPages,
       referrerSources,
+      regionBreakdown,
+      cityBreakdown,
     };
   },
 
