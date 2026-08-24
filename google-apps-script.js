@@ -35,6 +35,8 @@ function doGet(e) {
   
   if (action === 'getLeads') {
     return handleGetLeads();
+  } else if (action === 'getVisitorAnalytics') {
+    return handleGetVisitorAnalytics();
   }
   
   return ContentService.createTextOutput(JSON.stringify({ status: 'SUCCESS', message: 'API active' }))
@@ -58,6 +60,8 @@ function doPost(e) {
 
     if (action === 'createLead') {
       return handleCreateLead(contents);
+    } else if (action === 'logVisitor') {
+      return handleLogVisitor(contents);
     } else if (action === 'updateLead') {
       return handleUpdateLead(contents);
     } else if (action === 'addNote') {
@@ -272,5 +276,82 @@ function sendOwnerNotification(leadNumber, data, date) {
     });
   } catch (err) {
     Logger.log('Email send error: ' + err);
+  }
+}
+
+function handleLogVisitor(data) {
+  try {
+    const ss = getSpreadsheet();
+    let sheet = ss.getSheetByName('Visitors');
+    if (!sheet) {
+      sheet = ss.insertSheet('Visitors');
+      sheet.appendRow([
+        'ID', 'Session ID', 'Timestamp', 'Path', 'Page Title',
+        'Device', 'Browser', 'OS', 'Referrer', 'City', 'Region', 'Country', 'Location'
+      ]);
+    }
+
+    const vlogId = 'vlog-' + Date.now();
+    const city = data.city || 'Ahmedabad';
+    const region = data.region || 'Gujarat';
+    const country = data.country || 'India';
+    const locationStr = data.location || (city + ', ' + region + ', ' + country);
+
+    sheet.appendRow([
+      vlogId,
+      data.sessionId || 'sess-anon',
+      new Date().toISOString(),
+      data.path || '/',
+      data.pageTitle || 'Whitestone Fincorp',
+      data.device || 'DESKTOP',
+      data.browser || 'Chrome',
+      data.os || 'OS',
+      data.referrer || 'Direct / Search',
+      city,
+      region,
+      country,
+      locationStr
+    ]);
+  } catch (err) {}
+
+  return ContentService.createTextOutput(JSON.stringify({ status: 'SUCCESS' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function handleGetVisitorAnalytics() {
+  try {
+    const ss = getSpreadsheet();
+    const sheet = ss.getSheetByName('Visitors');
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'SUCCESS', visitors: [] }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    const values = sheet.getDataRange().getValues();
+    const visitors = [];
+
+    for (let i = values.length - 1; i >= 1 && visitors.length < 200; i--) {
+      visitors.push({
+        id: String(values[i][0]),
+        sessionId: String(values[i][1]),
+        timestamp: String(values[i][2]),
+        path: String(values[i][3]),
+        pageTitle: String(values[i][4]),
+        device: String(values[i][5]),
+        browser: String(values[i][6]),
+        os: String(values[i][7]),
+        referrer: String(values[i][8]),
+        city: String(values[i][9] || 'Ahmedabad'),
+        region: String(values[i][10] || 'Gujarat'),
+        country: String(values[i][11] || 'India'),
+        location: String(values[i][12] || (values[i][9] + ', ' + values[i][10] + ', ' + values[i][11]))
+      });
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ status: 'SUCCESS', visitors: visitors }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'ERROR', error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
 }

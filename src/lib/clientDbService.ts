@@ -262,9 +262,27 @@ export const clientDbService = {
     const regionCounts: Record<string, number> = {};
     const cityMap: Record<string, { city: string; region: string; count: number }> = {};
 
-    combined.forEach((v) => {
-      const reg = v.region || (v.location?.includes('Gujarat') ? 'Gujarat' : 'Gujarat');
-      const city = v.city || (v.location?.split(',')[0] || 'Ahmedabad');
+    const recentVisitors = combined.slice(0, 50).map((v) => {
+      let reg = v.region || '';
+      let city = v.city || '';
+      if (!reg || !city) {
+        const parts = (v.location || '').split(',').map((s) => s.trim()).filter(Boolean);
+        city = city || parts[0] || 'Ahmedabad';
+        reg = reg || parts[1] || 'Gujarat';
+      }
+      if (reg === 'IN' || reg === 'India') reg = 'Gujarat';
+      if (city === 'IN' || city === 'India') city = 'Ahmedabad';
+      return {
+        ...v,
+        city,
+        region: reg,
+        location: v.location && !v.location.startsWith('Gujarat, IN') ? v.location : `${city}, ${reg}, India`,
+      };
+    });
+
+    recentVisitors.forEach((v) => {
+      const reg = v.region || 'Gujarat';
+      const city = v.city || 'Ahmedabad';
       regionCounts[reg] = (regionCounts[reg] || 0) + 1;
 
       const cityKey = `${city}-${reg}`;
@@ -292,7 +310,7 @@ export const clientDbService = {
       uniqueVisitors: uniqueIds.size || 1,
       visitorsToday: todayLogs.length || 1,
       mobileSharePercent: mobileShare,
-      recentVisitors: combined.slice(0, 50),
+      recentVisitors,
       topPages,
       referrerSources,
       regionBreakdown,
