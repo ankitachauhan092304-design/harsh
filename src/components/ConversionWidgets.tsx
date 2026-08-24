@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Phone, MessageCircle, X, ArrowRight, Clock, HelpCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import VisitorCounterBadge from '@/components/VisitorCounterBadge';
 
 export default function ConversionWidgets() {
   const [showCallbackModal, setShowCallbackModal] = useState(false);
@@ -227,6 +228,9 @@ export default function ConversionWidgets() {
           </div>
         </div>
       )}
+
+      {/* Floating Live Visitor Counter Widget */}
+      <VisitorCounterBadge variant="floating" />
     </>
   );
 }

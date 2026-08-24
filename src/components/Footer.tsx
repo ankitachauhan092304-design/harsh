@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Shield, ArrowUpRight, Lock, BadgeCheck } from 'lucide-react';
+import VisitorCounterBadge from '@/components/VisitorCounterBadge';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -310,7 +311,10 @@ export default function Footer() {
 
         {/* Copyright row */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-[11px] text-slate-500">
-          <span>&copy; {currentYear} Whitestone Fincorp. All rights reserved.</span>
+          <div className="flex items-center gap-3">
+            <span>&copy; {currentYear} Whitestone Fincorp. All rights reserved.</span>
+            <VisitorCounterBadge variant="footer" />
+          </div>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
               <Lock size={10} className="text-emerald-500" />

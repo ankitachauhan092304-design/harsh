@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ChevronDown, Phone, Calculator, ArrowRight, ShieldCheck } from 'lucide-react';
+import VisitorCounterBadge from '@/components/VisitorCounterBadge';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -245,6 +246,7 @@ export default function Header() {
 
         {/* CTA Buttons */}
         <div className="hidden lg:flex items-center gap-4">
+          <VisitorCounterBadge variant="header" />
           <a
             href="tel:+919824975488"
             className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-[#0B4F9C] transition-colors duration-200"
