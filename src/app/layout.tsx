@@ -149,6 +149,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
         <meta name="google-site-verification" content="placeholder_google_verification_code" />
         <meta name="msvalidate.01" content="placeholder_bing_verification_code" />
         <script
