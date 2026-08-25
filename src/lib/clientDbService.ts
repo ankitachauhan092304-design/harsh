@@ -205,7 +205,7 @@ export const clientDbService = {
     const unmergedLocal = localLeads.filter((l) => !existingLeadNums.has(l.leadNumber));
     const merged = [...remoteLeads, ...unmergedLocal];
 
-    return merged.filter((l) => !l.isDeleted);
+    return merged.filter((l) => !l.isDeleted && Boolean(l.name?.trim() || l.phone?.trim()));
   },
 
   async getVisitorAnalytics(): Promise<VisitorAnalytics> {

@@ -56,12 +56,12 @@ function doPost(e) {
       contents = e.parameter;
     }
 
-    const action = contents.action || 'createLead';
+    const action = contents.action || (e && e.parameter && e.parameter.action) || '';
 
-    if (action === 'createLead') {
-      return handleCreateLead(contents);
-    } else if (action === 'logVisitor') {
+    if (action === 'logVisitor' || contents.sessionId || (!contents.name && !contents.phone)) {
       return handleLogVisitor(contents);
+    } else if (action === 'createLead') {
+      return handleCreateLead(contents);
     } else if (action === 'updateLead') {
       return handleUpdateLead(contents);
     } else if (action === 'addNote') {
@@ -77,6 +77,15 @@ function doPost(e) {
 
 function handleCreateLead(data) {
   try {
+    const name = (data.name || data.fullName || '').toString().trim();
+    const phone = (data.phone || data.mobile || '').toString().trim();
+
+    // Prevent blank visitor telemetry entries from populating the Leads tab
+    if (!name && !phone) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'SKIPPED', message: 'Blank lead ignored' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     const ss = getSpreadsheet();
     let sheet = ss.getSheetByName('Leads');
     
