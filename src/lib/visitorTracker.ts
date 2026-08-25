@@ -134,6 +134,8 @@ export async function trackVisitorPageView(pathName?: string) {
 
     // Send background telemetry to Google Webhook
     const targetWebhook = localStorage.getItem('wf_google_webhook_url') || DEFAULT_GOOGLE_WEBHOOK_URL;
+    const urlWithAction = targetWebhook.includes('?') ? `${targetWebhook}&action=logVisitor` : `${targetWebhook}?action=logVisitor`;
+
     const bodyParams = new URLSearchParams();
     bodyParams.append('action', 'logVisitor');
     bodyParams.append('sessionId', sessionId);
@@ -148,7 +150,7 @@ export async function trackVisitorPageView(pathName?: string) {
     bodyParams.append('country', loc.country);
     bodyParams.append('location', loc.locationStr);
 
-    fetch(targetWebhook, {
+    fetch(urlWithAction, {
       method: 'POST',
       mode: 'no-cors',
       body: bodyParams,

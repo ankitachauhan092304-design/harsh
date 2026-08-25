@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('wf_visitor_logs', JSON.stringify(storedLogs.slice(0, 200)));
 
             const targetWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec';
+            const urlWithAction = targetWebhook.includes('?') ? targetWebhook + '&action=logVisitor' : targetWebhook + '?action=logVisitor';
             const params = new URLSearchParams();
             params.append('action', 'logVisitor');
             params.append('sessionId', sid);
@@ -89,9 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 params.append('region', region);
                 params.append('country', country);
                 params.append('location', locationStr);
-                fetch(targetWebhook, { method: 'POST', mode: 'no-cors', body: params, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).catch(function(){});
+                fetch(urlWithAction, { method: 'POST', mode: 'no-cors', body: params, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).catch(function(){});
             }).catch(function() {
-                fetch(targetWebhook, { method: 'POST', mode: 'no-cors', body: params, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).catch(function(){});
+                fetch(urlWithAction, { method: 'POST', mode: 'no-cors', body: params, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).catch(function(){});
             });
         } catch (e) {}
     })();
