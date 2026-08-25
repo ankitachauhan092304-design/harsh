@@ -35,8 +35,11 @@ const publicDir = path.join(__dirname, '..', 'public');
 if (fs.existsSync(path.join(publicDir, 'robots.txt'))) {
   fs.copyFileSync(path.join(publicDir, 'robots.txt'), path.join(OUT, 'robots.txt'));
 }
+if (fs.existsSync(path.join(publicDir, 'google7a56c453127ae541.html'))) {
+  fs.copyFileSync(path.join(publicDir, 'google7a56c453127ae541.html'), path.join(OUT, 'google7a56c453127ae541.html'));
+}
 require('./generate-sitemap.js');
-console.log('✅ Created .nojekyll, CNAME, robots.txt and sitemap.xml in out/');
+console.log('✅ Created .nojekyll, CNAME, robots.txt, sitemap.xml and Google verification file in out/');
 
 function getAllHtml(dir, list = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
