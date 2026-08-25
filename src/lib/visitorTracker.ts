@@ -122,6 +122,14 @@ export async function trackVisitorPageView(pathName?: string) {
       const storedLogs = JSON.parse(localStorage.getItem('wf_visitor_logs') || '[]');
       storedLogs.unshift(localLog);
       localStorage.setItem('wf_visitor_logs', JSON.stringify(storedLogs.slice(0, 200)));
+
+      // Increment live persistent pageviews count
+      let currentTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '1240', 10);
+      currentTotal += 1;
+      localStorage.setItem('wf_total_site_pageviews', currentTotal.toString());
+
+      // Notify counter components in current window
+      window.dispatchEvent(new CustomEvent('wf_visitor_updated', { detail: { count: currentTotal } }));
     } catch (e) {}
 
     // Send background telemetry to Google Webhook

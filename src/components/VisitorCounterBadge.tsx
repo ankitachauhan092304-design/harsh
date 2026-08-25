@@ -15,23 +15,45 @@ export default function VisitorCounterBadge({ variant = 'floating', className = 
 
   useEffect(() => {
     let isMounted = true;
+
     const updateCounts = async () => {
       try {
+        const storedTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '1240', 10);
         const analytics = await clientDbService.getVisitorAnalytics();
-        if (isMounted && analytics) {
-          const total = Math.max(analytics.totalPageviews || 0, 1240);
-          const today = Math.max(analytics.visitorsToday || 0, 12);
-          setPageviews(total);
+        if (isMounted) {
+          const remoteCount = analytics?.totalPageviews || 0;
+          const finalCount = Math.max(storedTotal, remoteCount, 1240);
+          const today = Math.max(analytics?.visitorsToday || 0, 34);
+          setPageviews(finalCount);
           setVisitorsToday(today);
         }
-      } catch (e) {}
+      } catch (e) {
+        if (isMounted) {
+          const storedTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '1240', 10);
+          setPageviews(storedTotal);
+        }
+      }
     };
 
     updateCounts();
-    // Refresh real-time live counter every 3s
-    const interval = setInterval(updateCounts, 3000);
+
+    const handleCustomUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail?.count) {
+        setPageviews(customEvent.detail.count);
+      } else {
+        updateCounts();
+      }
+    };
+
+    window.addEventListener('wf_visitor_updated', handleCustomUpdate);
+    window.addEventListener('storage', updateCounts);
+    const interval = setInterval(updateCounts, 2000);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('wf_visitor_updated', handleCustomUpdate);
+      window.removeEventListener('storage', updateCounts);
       clearInterval(interval);
     };
   }, []);
