@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         consent: false,
     };
 
-    // Helper: Set/Clear Inline Error - Only displays error UI if touched[fieldName] is true!
+    // Helper: Set/Clear Inline Error
     function setError(inputEl, msg, fieldName) {
         if (!inputEl) return;
         let parent = inputEl.closest('.flex-col') || inputEl.parentElement;
@@ -142,8 +142,8 @@ document.addEventListener('DOMContentLoaded', () => {
             parent.appendChild(errorEl);
         }
 
-        // Do NOT display error UI if field is untouched!
-        if (fieldName && !touched[fieldName]) {
+        // Show error UI if touched or if field has invalid input
+        if (fieldName && !touched[fieldName] && !inputEl.value.trim()) {
             errorEl.textContent = '';
             inputEl.classList.remove('border-rose-400', 'bg-rose-50/20', 'border-emerald-400');
             return;
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!nameInput) return true;
         const val = nameInput.value.trim().replace(/\s+/g, ' ');
         if (!val) {
-            setError(nameInput, 'Full name is required.', 'name');
+            setError(nameInput, 'Full Name cannot be blank. Enter letters only (min 2 chars).', 'name');
             return false;
         }
         if (val.length < 2 || val.length > 60 || !/^[a-zA-Z\s\.\-']+$/.test(val)) {
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!phoneInput) return true;
         const digits = phoneInput.value.replace(/\D/g, '');
         if (!digits) {
-            setError(phoneInput, 'Mobile number is required.', 'phone');
+            setError(phoneInput, 'Mobile Number cannot be blank. Enter 10-digit number.', 'phone');
             return false;
         }
         if (digits.length !== 10 || !/^[6-9]\d{9}$/.test(digits)) {
@@ -254,6 +254,31 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
+    function updateSubmitButtonState() {
+        const nameVal = nameInput ? nameInput.value.trim() : '';
+        const phoneVal = phoneInput ? phoneInput.value.replace(/\D/g, '') : '';
+        
+        const isNameOk = nameVal.length >= 2 && /^[a-zA-Z\s\.\-']+$/.test(nameVal);
+        const isPhoneOk = phoneVal.length === 10 && /^[6-9]\d{9}$/.test(phoneVal);
+        const isEmailOk = emailInput ? Boolean(emailInput.value.trim() && /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailInput.value.trim())) : true;
+        const isCityOk = cityInput ? Boolean(GUJARAT_CITIES.some(c => c.toLowerCase() === cityInput.value.trim().toLowerCase())) : true;
+        const isLoanOk = loanAmountInput ? Boolean(Number(loanAmountInput.value.replace(/\D/g, '')) >= 10000) : true;
+        const isConsentOk = consentCheck ? Boolean(consentCheck.checked) : true;
+
+        const isFormValid = isNameOk && isPhoneOk && isEmailOk && isCityOk && isLoanOk && isConsentOk;
+
+        if (submitBtn) {
+            submitBtn.disabled = !isFormValid;
+            if (isFormValid) {
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-slate-300');
+                submitBtn.classList.add('cursor-pointer');
+            } else {
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                submitBtn.classList.remove('cursor-pointer');
+            }
+        }
+    }
+
     function validateAll() {
         const v1 = validateName();
         const v2 = validatePhone();
@@ -261,20 +286,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const v4 = validateCity();
         const v5 = validateLoanAmount();
         const v6 = validateConsent();
+        updateSubmitButtonState();
         return v1 && v2 && v3 && v4 && v5 && v6;
     }
 
-    // Input Restrictions & Touch Handlers
+    // Initialize Submit Button in Disabled State
+    updateSubmitButtonState();
+
+    // Input Restrictions & Live Handlers
     if (nameInput) {
         nameInput.maxLength = 60;
         nameInput.addEventListener('input', (e) => {
             e.target.value = e.target.value.replace(/[^a-zA-Z\s\.\-']/g, '').slice(0, 60);
-            if (touched.name) validateName();
+            touched.name = true;
+            validateName();
+            updateSubmitButtonState();
         });
         nameInput.addEventListener('blur', () => {
             touched.name = true;
             nameInput.value = nameInput.value.trim().replace(/\s+/g, ' ');
             validateName();
+            updateSubmitButtonState();
         });
     }
 
@@ -283,22 +315,28 @@ document.addEventListener('DOMContentLoaded', () => {
         phoneInput.setAttribute('inputmode', 'numeric');
         phoneInput.addEventListener('input', (e) => {
             e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
-            if (touched.phone) validatePhone();
+            touched.phone = true;
+            validatePhone();
+            updateSubmitButtonState();
         });
         phoneInput.addEventListener('blur', () => {
             touched.phone = true;
             validatePhone();
+            updateSubmitButtonState();
         });
     }
 
     if (emailInput) {
         emailInput.addEventListener('input', (e) => {
             e.target.value = e.target.value.toLowerCase().replace(/\s/g, '');
-            if (touched.email) validateEmail();
+            touched.email = true;
+            validateEmail();
+            updateSubmitButtonState();
         });
         emailInput.addEventListener('blur', () => {
             touched.email = true;
             validateEmail();
+            updateSubmitButtonState();
         });
     }
 
@@ -307,11 +345,14 @@ document.addEventListener('DOMContentLoaded', () => {
         loanAmountInput.addEventListener('input', (e) => {
             const digits = e.target.value.replace(/\D/g, '');
             e.target.value = digits ? formatIndianCurrency(digits) : '';
-            if (touched.loanAmount) validateLoanAmount();
+            touched.loanAmount = true;
+            validateLoanAmount();
+            updateSubmitButtonState();
         });
         loanAmountInput.addEventListener('blur', () => {
             touched.loanAmount = true;
             validateLoanAmount();
+            updateSubmitButtonState();
         });
     }
 
@@ -326,6 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
         consentCheck.addEventListener('change', () => {
             touched.consent = true;
             validateConsent();
+            updateSubmitButtonState();
         });
     }
 
