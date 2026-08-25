@@ -258,12 +258,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateSubmitButtonState() {
         const nameVal = nameInput ? nameInput.value.trim() : '';
         const phoneVal = phoneInput ? phoneInput.value.replace(/\D/g, '') : '';
+        const emailVal = emailInput ? emailInput.value.trim() : '';
+        const cityVal = cityInput ? cityInput.value.trim() : '';
+        const loanVal = loanAmountInput ? loanAmountInput.value.replace(/\D/g, '') : '';
         
-        const isNameOk = nameVal.length >= 2 && /^[a-zA-Z\s\.\-']+$/.test(nameVal);
-        const isPhoneOk = phoneVal.length === 10 && /^[6-9]\d{9}$/.test(phoneVal);
-        const isEmailOk = emailInput ? Boolean(emailInput.value.trim() && /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailInput.value.trim())) : true;
-        const isCityOk = cityInput ? Boolean(GUJARAT_CITIES.some(c => c.toLowerCase() === cityInput.value.trim().toLowerCase())) : true;
-        const isLoanOk = loanAmountInput ? Boolean(Number(loanAmountInput.value.replace(/\D/g, '')) >= 10000) : true;
+        const isNameOk = Boolean(nameVal.length >= 2 && /^[a-zA-Z\s\.\-']+$/.test(nameVal));
+        const isPhoneOk = Boolean(phoneVal.length === 10 && /^[6-9]\d{9}$/.test(phoneVal));
+        const isEmailOk = emailInput ? Boolean(emailVal && /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailVal)) : true;
+        const isCityOk = cityInput ? Boolean(GUJARAT_CITIES.some(c => c.toLowerCase() === cityVal.toLowerCase())) : true;
+        const isLoanOk = loanAmountInput ? Boolean(Number(loanVal) >= 10000) : true;
         const isConsentOk = consentCheck ? Boolean(consentCheck.checked) : true;
 
         const isFormValid = isNameOk && isPhoneOk && isEmailOk && isCityOk && isLoanOk && isConsentOk;
@@ -271,11 +274,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (submitBtn) {
             submitBtn.disabled = !isFormValid;
             if (isFormValid) {
-                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-slate-300');
-                submitBtn.classList.add('cursor-pointer');
+                // Fully Active State: Vibrant Blue-Emerald Gradient, Glowing Shadow, Clickable
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+                submitBtn.style.pointerEvents = 'auto';
+                submitBtn.style.background = 'linear-gradient(to right, #0B4F9C, #0E5DB5, #00A86B)';
+                submitBtn.style.color = '#ffffff';
+                submitBtn.style.boxShadow = '0 10px 25px -5px rgba(11, 79, 156, 0.4)';
+                submitBtn.classList.remove('opacity-50', 'opacity-60', 'opacity-70', 'cursor-not-allowed', 'bg-slate-200', 'bg-slate-300', 'text-slate-400');
+                submitBtn.classList.add('cursor-pointer', 'shadow-lg');
             } else {
+                // Fully Disabled State: Grayed Out, Muted Text, Non-clickable
+                submitBtn.style.opacity = '0.45';
+                submitBtn.style.cursor = 'not-allowed';
+                submitBtn.style.pointerEvents = 'none';
+                submitBtn.style.background = '#cbd5e1';
+                submitBtn.style.color = '#64748b';
+                submitBtn.style.boxShadow = 'none';
                 submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                submitBtn.classList.remove('cursor-pointer');
+                submitBtn.classList.remove('cursor-pointer', 'shadow-lg');
             }
         }
     }

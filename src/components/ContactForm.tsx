@@ -909,10 +909,10 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                   <button
                     type="submit"
                     disabled={!isFormValid || isSubmitting}
-                    className={`w-full py-4 rounded-2xl font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-2.5 relative overflow-hidden group btn-shine ${
+                    className={`w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2.5 relative overflow-hidden group btn-shine ${
                       isFormValid && !isSubmitting
-                        ? 'bg-gradient-to-r from-[#0B4F9C] via-[#1a5fb4] to-[#0B4F9C] hover:from-[#0a4485] hover:to-[#0a4485] text-white shadow-blue-500/15 hover:shadow-blue-500/25 active:scale-[0.99] cursor-pointer'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60 shadow-none'
+                        ? 'bg-gradient-to-r from-[#0B4F9C] via-[#0E5DB5] to-[#00A86B] text-white shadow-xl shadow-blue-500/30 hover:shadow-blue-500/40 active:scale-[0.99] cursor-pointer pointer-events-auto opacity-100 ring-2 ring-emerald-400/50'
+                        : 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-40 shadow-none pointer-events-none'
                     }`}
                   >
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full duration-700" />
