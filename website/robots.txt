@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /admin
 
-Sitemap: https://whitestonefincorp.com/sitemap.xml
+Sitemap: https://www.whitestonefincorp.com/sitemap.xml

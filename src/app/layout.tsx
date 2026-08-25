@@ -31,18 +31,18 @@ export const metadata: Metadata = {
   title: 'Whitestone Fincorp | Premium Loan Facilitator & Financial Consultant Gujarat',
   description: 'Whitestone Fincorp is the leading loan advisor and financial consultant in Gujarat. We facilitate Personal, Business, Home, Project Loans, and LAP at premium rates.',
   keywords: 'Personal Loan Gujarat, Business Loan Gujarat, Home Loan Gujarat, Loan Against Property Gujarat, Project Loan Gujarat, Financial Consultant Gujarat, Loan Advisor Gujarat, Whitestone Fincorp',
-  metadataBase: new URL('https://whitestonefincorp.com'),
+  metadataBase: new URL('https://www.whitestonefincorp.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'Whitestone Fincorp | Premium Loan Facilitator & Consultation Services',
     description: 'Secure personal, business, and home loans at optimized rates through our trusted banking and financial institution partners.',
-    url: 'https://whitestonefincorp.com',
+    url: 'https://www.whitestonefincorp.com',
     siteName: 'Whitestone Fincorp',
     images: [
       {
-        url: '/og-image.jpg',
+        url: 'https://www.whitestonefincorp.com/logo.svg',
         width: 1200,
         height: 630,
         alt: 'Whitestone Fincorp Loan Consultation',
