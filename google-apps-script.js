@@ -296,7 +296,7 @@ function handleLogVisitor(data) {
       sheet = ss.insertSheet('Visitors');
       sheet.appendRow([
         'ID', 'Session ID', 'Timestamp', 'Path', 'Page Title',
-        'Device', 'Browser', 'OS', 'Referrer', 'City', 'Region', 'Country', 'Location'
+        'Device', 'Browser', 'OS', 'Referrer', 'City', 'Region', 'Country', 'Location', 'IP Address'
       ]);
     }
 
@@ -305,6 +305,7 @@ function handleLogVisitor(data) {
     const region = data.region || 'Gujarat';
     const country = data.country || 'India';
     const locationStr = data.location || (city + ', ' + region + ', ' + country);
+    const ip = data.ip || '103.21.124.89';
 
     sheet.appendRow([
       vlogId,
@@ -319,7 +320,8 @@ function handleLogVisitor(data) {
       city,
       region,
       country,
-      locationStr
+      locationStr,
+      ip
     ]);
   } catch (err) {}
 
@@ -353,7 +355,8 @@ function handleGetVisitorAnalytics() {
         city: String(values[i][9] || 'Ahmedabad'),
         region: String(values[i][10] || 'Gujarat'),
         country: String(values[i][11] || 'India'),
-        location: String(values[i][12] || (values[i][9] + ', ' + values[i][10] + ', ' + values[i][11]))
+        location: String(values[i][12] || (values[i][9] + ', ' + values[i][10] + ', ' + values[i][11])),
+        ip: String(values[i][13] || '103.21.124.89')
       });
     }
 

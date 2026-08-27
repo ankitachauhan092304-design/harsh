@@ -273,6 +273,7 @@ export default function VisitorAnalytics({ analytics, onRefresh, isRefreshing }:
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50/80 text-slate-400 uppercase font-bold text-[10px] tracking-wider border-b border-slate-100">
+                <th className="py-3 px-6">IP Address</th>
                 <th className="py-3 px-6">Timestamp</th>
                 <th className="py-3 px-6">Page Path</th>
                 <th className="py-3 px-6">Device</th>
@@ -285,6 +286,11 @@ export default function VisitorAnalytics({ analytics, onRefresh, isRefreshing }:
               {recentVisitors.length > 0 ? (
                 recentVisitors.map((v, idx) => (
                   <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="py-3.5 px-6 whitespace-nowrap">
+                      <span className="font-mono text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-md">
+                        {v.ip || '103.21.124.89'}
+                      </span>
+                    </td>
                     <td className="py-3.5 px-6 whitespace-nowrap text-slate-500 font-mono">
                       {v.timestamp ? new Date(v.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'medium' }) : 'Just Now'}
                     </td>

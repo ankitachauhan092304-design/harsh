@@ -7,6 +7,7 @@ interface LocationData {
   city: string;
   region: string;
   country: string;
+  ip: string;
   locationStr: string;
 }
 
@@ -51,7 +52,7 @@ function detectOS(): string {
 
 async function fetchVisitorLocation(): Promise<LocationData> {
   if (typeof window === 'undefined') {
-    return { city: 'Ahmedabad', region: 'Gujarat', country: 'India', locationStr: 'Ahmedabad, Gujarat, India' };
+    return { city: 'Ahmedabad', region: 'Gujarat', country: 'India', ip: '103.21.124.89', locationStr: 'Ahmedabad, Gujarat, India' };
   }
 
   try {
@@ -69,10 +70,12 @@ async function fetchVisitorLocation(): Promise<LocationData> {
       const city = data.city || 'Ahmedabad';
       const region = data.region || 'Gujarat';
       const country = data.country_name || 'India';
+      const ip = data.ip || '103.21.124.89';
       const loc: LocationData = {
         city,
         region,
         country,
+        ip,
         locationStr: `${city}, ${region}, ${country}`,
       };
       sessionStorage.setItem('wf_visitor_location', JSON.stringify(loc));
@@ -84,6 +87,7 @@ async function fetchVisitorLocation(): Promise<LocationData> {
     city: 'Ahmedabad',
     region: 'Gujarat',
     country: 'India',
+    ip: '103.21.124.89',
     locationStr: 'Ahmedabad, Gujarat, India',
   };
 }
@@ -116,6 +120,7 @@ export async function trackVisitorPageView(pathName?: string) {
       city: loc.city,
       region: loc.region,
       country: loc.country,
+      ip: loc.ip,
     };
 
     try {
@@ -124,38 +129,40 @@ export async function trackVisitorPageView(pathName?: string) {
       localStorage.setItem('wf_visitor_logs', JSON.stringify(storedLogs.slice(0, 200)));
 
       // Increment live persistent pageviews count
-      let currentTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '1240', 10);
+      let currentTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '1248', 10);
       currentTotal += 1;
       localStorage.setItem('wf_total_site_pageviews', currentTotal.toString());
 
       // Notify counter components in current window
-      window.dispatchEvent(new CustomEvent('wf_visitor_updated', { detail: { count: currentTotal } }));
+      try {
+        window.dispatchEvent(new CustomEvent('wf_visitor_updated', { detail: { count: currentTotal } }));
+      } catch (evErr) {}
+
+      // Send background telemetry to Google Webhook
+      const targetWebhook = localStorage.getItem('wf_google_webhook_url') || DEFAULT_GOOGLE_WEBHOOK_URL;
+      const urlWithAction = targetWebhook.includes('?') ? targetWebhook + '&action=logVisitor' : targetWebhook + '?action=logVisitor';
+
+      const params = new URLSearchParams();
+      params.append('action', 'logVisitor');
+      params.append('sessionId', sessionId);
+      params.append('path', currentPath);
+      params.append('pageTitle', pageTitle);
+      params.append('device', device);
+      params.append('browser', browser);
+      params.append('os', os);
+      params.append('referrer', referrer);
+      params.append('city', loc.city);
+      params.append('region', loc.region);
+      params.append('country', loc.country);
+      params.append('location', loc.locationStr);
+      params.append('ip', loc.ip);
+
+      fetch(urlWithAction, {
+        method: 'POST',
+        body: params,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      }).catch(() => {});
     } catch (e) {}
-
-    // Send background telemetry to Google Webhook
-    const targetWebhook = localStorage.getItem('wf_google_webhook_url') || DEFAULT_GOOGLE_WEBHOOK_URL;
-    const urlWithAction = targetWebhook.includes('?') ? `${targetWebhook}&action=logVisitor` : `${targetWebhook}?action=logVisitor`;
-
-    const bodyParams = new URLSearchParams();
-    bodyParams.append('action', 'logVisitor');
-    bodyParams.append('sessionId', sessionId);
-    bodyParams.append('path', currentPath);
-    bodyParams.append('pageTitle', pageTitle);
-    bodyParams.append('device', device);
-    bodyParams.append('browser', browser);
-    bodyParams.append('os', os);
-    bodyParams.append('referrer', referrer);
-    bodyParams.append('city', loc.city);
-    bodyParams.append('region', loc.region);
-    bodyParams.append('country', loc.country);
-    bodyParams.append('location', loc.locationStr);
-
-    fetch(urlWithAction, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: bodyParams,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    }).catch(() => {});
   } catch (err) {
     console.warn('Visitor tracking notice:', err);
   }
