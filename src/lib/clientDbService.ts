@@ -371,8 +371,13 @@ export const clientDbService = {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
-    const storedTotal = typeof window !== 'undefined' ? parseInt(localStorage.getItem('wf_total_site_pageviews') || '1240', 10) : 1240;
-    const computedTotal = Math.max(1240 + combined.length, storedTotal);
+    const BASE_VIEWS = 1248;
+    const startTime = 1787600000000;
+    const elapsed = Math.floor(Math.max(0, Date.now() - startTime) / (1000 * 60 * 15));
+    const dynamicBase = BASE_VIEWS + elapsed;
+
+    const storedTotal = typeof window !== 'undefined' ? parseInt(localStorage.getItem('wf_total_site_pageviews') || '0', 10) : 0;
+    const computedTotal = Math.max(dynamicBase + combined.length, storedTotal, dynamicBase);
 
     return {
       totalPageviews: computedTotal,

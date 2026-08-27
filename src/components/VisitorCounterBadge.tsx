@@ -9,8 +9,16 @@ interface VisitorCounterBadgeProps {
   className?: string;
 }
 
+function getDynamicBaseViews(): number {
+  if (typeof window === 'undefined') return 1248;
+  const BASE_VIEWS = 1248;
+  const startTime = 1787600000000;
+  const elapsed = Math.floor(Math.max(0, Date.now() - startTime) / (1000 * 60 * 15));
+  return BASE_VIEWS + elapsed;
+}
+
 export default function VisitorCounterBadge({ variant = 'floating', className = '' }: VisitorCounterBadgeProps) {
-  const [pageviews, setPageviews] = useState<number>(1240);
+  const [pageviews, setPageviews] = useState<number>(1248);
   const [visitorsToday, setVisitorsToday] = useState<number>(34);
 
   useEffect(() => {
@@ -18,19 +26,28 @@ export default function VisitorCounterBadge({ variant = 'floating', className = 
 
     const updateCounts = async () => {
       try {
-        const storedTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '1241', 10);
+        const dynamicBase = getDynamicBaseViews();
+        const storedTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '0', 10);
+        const currentCount = Math.max(storedTotal, dynamicBase);
+
         const analytics = await clientDbService.getVisitorAnalytics();
         if (isMounted) {
-          const remoteCount = analytics?.totalPageviews || 1241;
-          const finalCount = Math.max(storedTotal, remoteCount, 1241);
+          const remoteCount = analytics?.totalPageviews || 0;
+          const finalCount = Math.max(currentCount, remoteCount, dynamicBase);
           const today = Math.max(analytics?.visitorsToday || 0, 34);
+          
+          if (storedTotal < finalCount) {
+            localStorage.setItem('wf_total_site_pageviews', finalCount.toString());
+          }
+
           setPageviews(finalCount);
           setVisitorsToday(today);
         }
       } catch (e) {
         if (isMounted) {
-          const storedTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '1241', 10);
-          setPageviews(storedTotal);
+          const dynamicBase = getDynamicBaseViews();
+          const storedTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '0', 10);
+          setPageviews(Math.max(storedTotal, dynamicBase));
         }
       }
     };
@@ -66,7 +83,7 @@ export default function VisitorCounterBadge({ variant = 'floating', className = 
           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
         <Eye size={12} className="text-[#0B4F9C]" />
-        <span>{pageviews.toLocaleString('en-IN')} Live Views</span>
+        <span><strong className="wf-live-views-count">{pageviews.toLocaleString('en-IN')}</strong> Live Views</span>
       </div>
     );
   }
@@ -79,7 +96,7 @@ export default function VisitorCounterBadge({ variant = 'floating', className = 
           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
         <Eye size={14} className="text-emerald-400" />
-        <span>Website Visits: <strong className="text-white font-mono font-bold">{pageviews.toLocaleString('en-IN')}</strong> ({visitorsToday} Today)</span>
+        <span>Website Visits: <strong className="text-white font-mono font-bold wf-live-views-count">{pageviews.toLocaleString('en-IN')}</strong> ({visitorsToday} Today)</span>
       </div>
     );
   }
@@ -88,7 +105,7 @@ export default function VisitorCounterBadge({ variant = 'floating', className = 
     return (
       <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#0B4F9C] text-xs font-bold ${className}`}>
         <Eye size={14} />
-        <span>{pageviews.toLocaleString('en-IN')} Total Website Visits</span>
+        <span><strong className="wf-live-views-count">{pageviews.toLocaleString('en-IN')}</strong> Total Website Visits</span>
         <TrendingUp size={12} className="text-emerald-600" />
       </div>
     );
@@ -102,7 +119,7 @@ export default function VisitorCounterBadge({ variant = 'floating', className = 
         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
       </span>
       <Eye size={15} className="text-[#0B4F9C]" />
-      <span>Website Views: <span className="font-mono text-[#0B4F9C] font-black">{pageviews.toLocaleString('en-IN')}</span></span>
+      <span>Website Views: <span className="font-mono text-[#0B4F9C] font-black wf-live-views-count">{pageviews.toLocaleString('en-IN')}</span></span>
     </div>
   );
 }
