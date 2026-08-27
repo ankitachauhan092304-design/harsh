@@ -45,6 +45,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const os = ua.includes('Android') ? 'Android' : ua.includes('iPhone') ? 'iOS' : ua.includes('Mac') ? 'macOS' : 'Windows';
             const referrer = document.referrer || 'Direct / Search';
 
+            let visitorIp = '103.21.124.89';
+            try {
+                const cachedLoc = sessionStorage.getItem('wf_visitor_location');
+                if (cachedLoc) {
+                    const parsed = JSON.parse(cachedLoc);
+                    if (parsed.ip) visitorIp = parsed.ip;
+                }
+            } catch (e) {}
+
             const localLog = {
                 id: 'vlog-' + Date.now(),
                 sessionId: sid,
@@ -58,7 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 city: 'Ahmedabad',
                 region: 'Gujarat',
                 country: 'India',
-                location: 'Ahmedabad, Gujarat, India'
+                location: 'Ahmedabad, Gujarat, India',
+                ip: visitorIp
             };
 
             const storedLogs = JSON.parse(localStorage.getItem('wf_visitor_logs') || '[]');
@@ -98,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             params.append('browser', browser);
             params.append('os', os);
             params.append('referrer', referrer);
+            params.append('ip', visitorIp);
 
             fetch('https://ipapi.co/json/').then(function(res) { return res.json(); }).then(function(loc) {
                 const city = loc.city || 'Ahmedabad';
