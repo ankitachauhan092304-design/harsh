@@ -66,7 +66,7 @@ export default function VisitorCounterBadge({ variant = 'floating', className = 
           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
         <Eye size={12} className="text-[#0B4F9C]" />
-        <span>{pageviews.toLocaleString('en-IN')}+ Live Views</span>
+        <span>{pageviews.toLocaleString('en-IN')} Live Views</span>
       </div>
     );
   }
