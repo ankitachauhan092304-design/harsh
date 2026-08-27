@@ -65,10 +65,24 @@ document.addEventListener('DOMContentLoaded', () => {
             storedLogs.unshift(localLog);
             localStorage.setItem('wf_visitor_logs', JSON.stringify(storedLogs.slice(0, 200)));
 
-            // Increment live persistent pageviews count
-            let currentTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '1240', 10);
+            // Dynamic baseline views calculation so views increment continuously over time
+            const BASE_VIEWS = 1248;
+            const startTime = 1787600000000;
+            const elapsed = Math.floor(Math.max(0, Date.now() - startTime) / (1000 * 60 * 15));
+            const dynamicBase = BASE_VIEWS + elapsed;
+
+            let currentTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '0', 10);
+            if (!currentTotal || currentTotal < dynamicBase) {
+                currentTotal = dynamicBase;
+            }
             currentTotal += 1;
             localStorage.setItem('wf_total_site_pageviews', currentTotal.toString());
+
+            // Immediately update static page DOM elements with class wf-live-views-count
+            document.querySelectorAll('.wf-live-views-count').forEach(el => {
+                el.textContent = currentTotal.toLocaleString('en-IN');
+            });
+
             try {
                 window.dispatchEvent(new CustomEvent('wf_visitor_updated', { detail: { count: currentTotal } }));
             } catch (evErr) {}
