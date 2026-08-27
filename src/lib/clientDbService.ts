@@ -379,10 +379,15 @@ export const clientDbService = {
     const storedTotal = typeof window !== 'undefined' ? parseInt(localStorage.getItem('wf_total_site_pageviews') || '0', 10) : 0;
     const computedTotal = Math.max(dynamicBase + combined.length, storedTotal, dynamicBase);
 
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const minutesPassed = Math.floor((now.getTime() - startOfDay) / (1000 * 60));
+    const dynamicToday = 14 + Math.floor(minutesPassed / 25);
+
     return {
       totalPageviews: computedTotal,
       uniqueVisitors: Math.max(uniqueIds.size, 14),
-      visitorsToday: Math.max(todayLogs.length, 34),
+      visitorsToday: Math.max(todayLogs.length, dynamicToday),
       mobileSharePercent: mobileShare,
       recentVisitors,
       topPages,

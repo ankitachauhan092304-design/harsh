@@ -17,9 +17,18 @@ function getDynamicBaseViews(): number {
   return BASE_VIEWS + elapsed;
 }
 
+function getDynamicTodayVisitors(): number {
+  if (typeof window === 'undefined') return 18;
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const minutesPassed = Math.floor((now.getTime() - startOfDay) / (1000 * 60));
+  const dailyIncrement = Math.floor(minutesPassed / 25);
+  return 14 + dailyIncrement;
+}
+
 export default function VisitorCounterBadge({ variant = 'floating', className = '' }: VisitorCounterBadgeProps) {
   const [pageviews, setPageviews] = useState<number>(1248);
-  const [visitorsToday, setVisitorsToday] = useState<number>(34);
+  const [visitorsToday, setVisitorsToday] = useState<number>(18);
 
   useEffect(() => {
     let isMounted = true;
@@ -34,7 +43,8 @@ export default function VisitorCounterBadge({ variant = 'floating', className = 
         if (isMounted) {
           const remoteCount = analytics?.totalPageviews || 0;
           const finalCount = Math.max(currentCount, remoteCount, dynamicBase);
-          const today = Math.max(analytics?.visitorsToday || 0, 34);
+          const todayBase = getDynamicTodayVisitors();
+          const today = Math.max(analytics?.visitorsToday || 0, todayBase);
           
           if (storedTotal < finalCount) {
             localStorage.setItem('wf_total_site_pageviews', finalCount.toString());
@@ -48,6 +58,7 @@ export default function VisitorCounterBadge({ variant = 'floating', className = 
           const dynamicBase = getDynamicBaseViews();
           const storedTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '0', 10);
           setPageviews(Math.max(storedTotal, dynamicBase));
+          setVisitorsToday(getDynamicTodayVisitors());
         }
       }
     };
@@ -96,7 +107,7 @@ export default function VisitorCounterBadge({ variant = 'floating', className = 
           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
         <Eye size={14} className="text-emerald-400" />
-        <span>Website Visits: <strong className="text-white font-mono font-bold wf-live-views-count">{pageviews.toLocaleString('en-IN')}</strong> ({visitorsToday} Today)</span>
+        <span>Website Visits: <strong className="text-white font-mono font-bold wf-live-views-count">{pageviews.toLocaleString('en-IN')}</strong> (<strong className="text-emerald-400 font-mono">{visitorsToday}</strong> Today)</span>
       </div>
     );
   }
