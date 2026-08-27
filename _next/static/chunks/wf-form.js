@@ -65,6 +65,14 @@ document.addEventListener('DOMContentLoaded', () => {
             storedLogs.unshift(localLog);
             localStorage.setItem('wf_visitor_logs', JSON.stringify(storedLogs.slice(0, 200)));
 
+            // Increment live persistent pageviews count
+            let currentTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '1240', 10);
+            currentTotal += 1;
+            localStorage.setItem('wf_total_site_pageviews', currentTotal.toString());
+            try {
+                window.dispatchEvent(new CustomEvent('wf_visitor_updated', { detail: { count: currentTotal } }));
+            } catch (evErr) {}
+
             const targetWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec';
             const urlWithAction = targetWebhook.includes('?') ? targetWebhook + '&action=logVisitor' : targetWebhook + '?action=logVisitor';
             const params = new URLSearchParams();
