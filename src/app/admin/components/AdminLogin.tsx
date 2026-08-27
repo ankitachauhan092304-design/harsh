@@ -160,7 +160,7 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
                 disabled={isLocked || isLoading}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@whitestonefincorp.com"
+                placeholder="Enter your email address"
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold outline-none focus:border-[#0B4F9C] focus:bg-white transition-all disabled:opacity-60"
               />
             </div>
@@ -221,45 +221,6 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
             )}
           </button>
         </form>
-
-        {/* Quick Demo Login Preset Buttons */}
-        <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-2">
-          <p className="text-[10px] font-bold text-slate-400 uppercase text-center tracking-wider mb-1">Demo Quick Logins</p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => { setEmail('superadmin@whitestonefincorp.com'); setPassword('SuperAdminPassword123!'); }}
-              className="p-2 bg-slate-50 hover:bg-slate-100 rounded-lg text-[10px] font-bold text-slate-700 text-left border border-slate-200 transition-colors"
-            >
-              <div className="text-[#0B4F9C]">Super Admin</div>
-              <div className="text-[9px] text-slate-400 font-mono">superadmin@...</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => { setEmail('admin@whitestonefincorp.com'); setPassword('AdminPassword123!'); }}
-              className="p-2 bg-slate-50 hover:bg-slate-100 rounded-lg text-[10px] font-bold text-slate-700 text-left border border-slate-200 transition-colors"
-            >
-              <div className="text-[#0B4F9C]">Admin</div>
-              <div className="text-[9px] text-slate-400 font-mono">admin@...</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => { setEmail('executive@whitestonefincorp.com'); setPassword('ExecutivePassword123!'); }}
-              className="p-2 bg-slate-50 hover:bg-slate-100 rounded-lg text-[10px] font-bold text-slate-700 text-left border border-slate-200 transition-colors"
-            >
-              <div className="text-[#00A86B]">Loan Executive</div>
-              <div className="text-[9px] text-slate-400 font-mono">executive@...</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => { setEmail('content@whitestonefincorp.com'); setPassword('ContentPassword123!'); }}
-              className="p-2 bg-slate-50 hover:bg-slate-100 rounded-lg text-[10px] font-bold text-slate-700 text-left border border-slate-200 transition-colors"
-            >
-              <div className="text-indigo-600">Content Manager</div>
-              <div className="text-[9px] text-slate-400 font-mono">content@...</div>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
