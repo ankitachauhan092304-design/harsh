@@ -18,18 +18,18 @@ export default function VisitorCounterBadge({ variant = 'floating', className = 
 
     const updateCounts = async () => {
       try {
-        const storedTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '1240', 10);
+        const storedTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '1241', 10);
         const analytics = await clientDbService.getVisitorAnalytics();
         if (isMounted) {
-          const remoteCount = analytics?.totalPageviews || 0;
-          const finalCount = Math.max(storedTotal, remoteCount, 1240);
+          const remoteCount = analytics?.totalPageviews || 1241;
+          const finalCount = Math.max(storedTotal, remoteCount, 1241);
           const today = Math.max(analytics?.visitorsToday || 0, 34);
           setPageviews(finalCount);
           setVisitorsToday(today);
         }
       } catch (e) {
         if (isMounted) {
-          const storedTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '1240', 10);
+          const storedTotal = parseInt(localStorage.getItem('wf_total_site_pageviews') || '1241', 10);
           setPageviews(storedTotal);
         }
       }
