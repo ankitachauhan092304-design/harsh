@@ -305,14 +305,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.style.pointerEvents = 'auto'; // Fully active and clickable on all mobile & desktop screens
-            submitBtn.style.opacity = '1';
+            submitBtn.style.pointerEvents = 'auto';
             submitBtn.style.cursor = 'pointer';
-            submitBtn.style.background = 'linear-gradient(to right, #0B4F9C, #0E5DB5, #00A86B)';
-            submitBtn.style.color = '#ffffff';
-            submitBtn.style.boxShadow = '0 10px 25px -5px rgba(11, 79, 156, 0.4)';
-            submitBtn.classList.remove('opacity-40', 'opacity-50', 'opacity-60', 'cursor-not-allowed', 'bg-slate-200', 'bg-slate-300', 'text-slate-400', 'text-slate-500');
-            submitBtn.classList.add('cursor-pointer', 'shadow-lg');
+            if (isFormValid) {
+                submitBtn.style.opacity = '1';
+                submitBtn.style.background = 'linear-gradient(to right, #0B4F9C, #0E5DB5, #00A86B)';
+                submitBtn.style.color = '#ffffff';
+                submitBtn.style.boxShadow = '0 10px 25px -5px rgba(11, 79, 156, 0.4)';
+                submitBtn.style.border = 'none';
+            } else {
+                submitBtn.style.opacity = '0.85';
+                submitBtn.style.background = '#f1f5f9';
+                submitBtn.style.color = '#94a3b8';
+                submitBtn.style.boxShadow = 'none';
+                submitBtn.style.border = '1px solid #cbd5e1';
+            }
         }
     }
 
