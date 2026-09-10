@@ -537,7 +537,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {}
 
         // Guaranteed Webhook Post to Google Apps Script via sendBeacon or await fetch
-        const targetWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec';
+        const baseWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec';
+        const targetWebhook = baseWebhook.includes('?') ? baseWebhook + '&action=createLead' : baseWebhook + '?action=createLead';
         
         try {
             const webhookParams = new URLSearchParams();

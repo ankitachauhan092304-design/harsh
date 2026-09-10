@@ -120,7 +120,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
       }
       case 'email': {
         const emailVal = String(value).trim();
-        if (!emailVal) return 'Please enter a valid email address.';
+        if (!emailVal) return ''; // Email is optional
         if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailVal)) {
           return 'Please enter a valid email address.';
         }
@@ -128,9 +128,8 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
       }
       case 'city': {
         const cityVal = String(value).trim();
-        if (!cityVal) return 'Please select a valid city from the list.';
-        const match = GUJARAT_CITIES.find((c) => c.toLowerCase() === cityVal.toLowerCase());
-        if (!match) return 'Please select a valid city from the list.';
+        if (!cityVal) return 'Please enter your city.';
+        if (cityVal.length < 2) return 'City name must be at least 2 characters.';
         return '';
       }
       case 'loanAmount': {
@@ -161,17 +160,28 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
       const err = validateField(field, val as string | boolean);
       if (err) newErrors[field] = err;
     });
-    setErrors(newErrors);
+
     const hasErrors = Object.keys(newErrors).length > 0;
     if (hasErrors) {
+      newErrors.general = 'Please fill out all required fields highlighted in red below.';
+      setErrors(newErrors);
       setTimeout(() => {
-        const firstErrEl = document.querySelector('[aria-invalid="true"]') || document.querySelector('.text-rose-500');
+        const firstErrEl = document.querySelector('[aria-invalid="true"]') ||
+                           document.querySelector('.text-rose-500') ||
+                           document.querySelector('.border-rose-400');
         if (firstErrEl) {
           firstErrEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      }, 50);
+      }, 100);
+      return false;
     }
-    return !hasErrors;
+
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.general;
+      return next;
+    });
+    return true;
   }, [formData, validateField]);
 
   // Handle blur event: mark field as touched and validate
@@ -411,7 +421,8 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     } catch (err) {}
 
     // Background submit to Google Webhook
-    const targetWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec';
+    const baseWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec';
+    const targetWebhook = baseWebhook.includes('?') ? `${baseWebhook}&action=createLead` : `${baseWebhook}?action=createLead`;
     
     try {
       const googleParams = new URLSearchParams();
@@ -451,8 +462,8 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     });
 
     setSubmitStatus('SUCCESS');
+    setIsOpeningWA(false);
 
-    setIsOpeningWA(true);
     const waMessage = buildEnquiryMessage({
       leadNumber,
       name: formData.name,
@@ -466,8 +477,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     setTimeout(() => {
       const waUrl = buildWhatsAppUrl(waMessage, DEFAULT_WA_NUMBER);
       window.location.href = waUrl;
-      setIsOpeningWA(false);
-    }, 800);
+    }, 1800);
 
     setFormData({ name: '', phone: '', email: '', city: '', loanType: defaultLoanType, loanAmount: '', message: '', consent: false, honeypot: '' });
     setFiles([]); setTouched({}); setErrors({});
@@ -946,42 +956,23 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
               </AnimatePresence>
 
               {/* Submit */}
-              {(() => {
-                const isNameOk = formData.name.trim().length >= 2 && /^[a-zA-Z\s\.\-']+$/.test(formData.name.trim());
-                const isPhoneOk = formData.phone.replace(/\D/g, '').length === 10 && /^[6-9]\d{9}$/.test(formData.phone.replace(/\D/g, ''));
-                const isEmailOk = formData.email ? /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email.trim()) : true;
-                const isCityOk = formData.city ? formData.city.trim().length >= 2 : false;
-                const isLoanAmountOk = formData.loanAmount ? Number(formData.loanAmount.replace(/\D/g, '')) >= 10000 : false;
-                const isConsentOk = Boolean(formData.consent);
-                const isFormValid = isNameOk && isPhoneOk && isEmailOk && isCityOk && isLoanAmountOk && isConsentOk;
-
-                return (
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    onClick={(e) => {
-                      if (!isFormValid && !isSubmitting) {
-                        e.preventDefault();
-                        setTouched({ name: true, phone: true, email: true, city: true, loanAmount: true, loanType: true, consent: true });
-                        validateAll();
-                      }
-                    }}
-                    className={`w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2.5 relative overflow-hidden group btn-shine cursor-pointer pointer-events-auto opacity-100 bg-gradient-to-r from-[#0B4F9C] via-[#0E5DB5] to-[#00A86B] text-white shadow-xl shadow-blue-500/30 hover:shadow-blue-500/40 active:scale-[0.99] ring-2 ring-emerald-400/50`}
-                  >
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full duration-700" />
-                    {isSubmitting ? (
-                      <><Loader2 size={17} className="animate-spin" /><span>Saving & Opening WhatsApp…</span></>
-                    ) : (
-                      <>
-                        <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                        </svg>
-                        <span>Submit & Chat on WhatsApp</span>
-                      </>
-                    )}
-                  </button>
-                );
-              })()}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2.5 relative overflow-hidden group btn-shine cursor-pointer pointer-events-auto opacity-100 bg-gradient-to-r from-[#0B4F9C] via-[#0E5DB5] to-[#00A86B] text-white shadow-xl shadow-blue-500/30 hover:shadow-blue-500/40 active:scale-[0.99] ring-2 ring-emerald-400/50"
+              >
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full duration-700" />
+                {isSubmitting ? (
+                  <><Loader2 size={17} className="animate-spin" /><span>Saving & Opening WhatsApp…</span></>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    <span>Submit & Chat on WhatsApp</span>
+                  </>
+                )}
+              </button>
 
               {/* Trust micro-line */}
               <p className="text-center text-[10px] text-slate-400 font-medium flex items-center justify-center gap-1.5">
