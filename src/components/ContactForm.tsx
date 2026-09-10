@@ -414,12 +414,17 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
       googleParams.append('remarks', formData.message || '');
       googleParams.append('source', 'WEBSITE_FORM');
 
-      fetch(targetWebhook, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: googleParams,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      }).catch((err) => console.log('Background Webhook post notice:', err));
+      if (navigator.sendBeacon) {
+        const blob = new Blob([googleParams.toString()], { type: 'application/x-www-form-urlencoded' });
+        navigator.sendBeacon(targetWebhook, blob);
+      } else {
+        await fetch(targetWebhook, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: googleParams,
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        }).catch((err) => console.log('Background Webhook post notice:', err));
+      }
     } catch (err) {
       console.error('Google Webhook submission error:', err);
     }
