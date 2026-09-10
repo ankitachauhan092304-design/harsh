@@ -162,7 +162,16 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
       if (err) newErrors[field] = err;
     });
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const hasErrors = Object.keys(newErrors).length > 0;
+    if (hasErrors) {
+      setTimeout(() => {
+        const firstErrEl = document.querySelector('[aria-invalid="true"]') || document.querySelector('.text-rose-500');
+        if (firstErrEl) {
+          firstErrEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+    }
+    return !hasErrors;
   }, [formData, validateField]);
 
   // Handle blur event: mark field as touched and validate
@@ -248,11 +257,11 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
   };
 
   // City Autocomplete selection
-  const selectCity = (city: string) => {
-    setFormData((prev) => ({ ...prev, city }));
+  const selectCity = (cityName: string) => {
+    setFormData((prev) => ({ ...prev, city: cityName }));
     setShowCityDropdown(false);
     setTouched((prev) => ({ ...prev, city: true }));
-    setErrors((prev) => ({ ...prev, city: validateField('city', city) }));
+    setErrors((prev) => ({ ...prev, city: validateField('city', cityName) }));
   };
 
   const handleCityKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -273,74 +282,82 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     }
   };
 
-  // ── File Handling ────────────────────────────────────────────────────────
-  const processFiles = useCallback((selectedFiles: File[]) => {
-    const validFiles: File[] = [];
-    const fileErrors: string[] = [];
+  // File Upload Handlers
+  const handleFilesAdded = useCallback(
+    (newFiles: File[]) => {
+      const validFiles: File[] = [];
+      const errMsgs: string[] = [];
 
-    selectedFiles.forEach((file) => {
-      const sizeMb = file.size / (1024 * 1024);
-      const isAllowedType = ['application/pdf', 'image/jpeg', 'image/png'].includes(file.type);
-      
-      if (!isAllowedType) {
-        fileErrors.push(`${file.name}: Only PDF, JPG, and PNG files are allowed.`);
-        return;
-      }
-      if (sizeMb > 5) {
-        fileErrors.push(`${file.name}: File size exceeds 5MB limit.`);
-        return;
-      }
-      validFiles.push(file);
-    });
-
-    if (fileErrors.length > 0) {
-      setErrors((prev) => ({ ...prev, general: fileErrors.join(' ') }));
-    } else {
-      setErrors((prev) => {
-        const copy = { ...prev };
-        delete copy.general;
-        return copy;
+      newFiles.forEach((file) => {
+        const sizeMb = file.size / (1024 * 1024);
+        const validTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+        if (!validTypes.includes(file.type)) {
+          errMsgs.push(`${file.name}: Only PDF, JPG, and PNG files are allowed.`);
+        } else if (sizeMb > 5) {
+          errMsgs.push(`${file.name}: File size exceeds 5MB limit.`);
+        } else {
+          validFiles.push(file);
+        }
       });
-    }
 
-    validFiles.forEach((file) => {
-      const key = `${file.name}-${file.size}`;
-      setUploadProgress((prev) => ({ ...prev, [key]: 0 }));
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += Math.random() * 25 + 10;
-        if (progress >= 100) { progress = 100; clearInterval(interval); }
-        setUploadProgress((prev) => ({ ...prev, [key]: Math.min(progress, 100) }));
-      }, 120);
-    });
+      if (errMsgs.length > 0) {
+        setErrors((prev) => ({ ...prev, general: errMsgs.join(' ') }));
+      } else {
+        setErrors((prev) => {
+          const next = { ...prev };
+          delete next.general;
+          return next;
+        });
+      }
 
-    setFiles((prev) => {
-      const existing = new Set(prev.map((f) => `${f.name}-${f.size}`));
-      return [...prev, ...validFiles.filter((f) => !existing.has(`${f.name}-${f.size}`))];
-    });
-  }, []);
+      validFiles.forEach((file) => {
+        const key = `${file.name}-${file.size}`;
+        setUploadProgress((prev) => ({ ...prev, [key]: 0 }));
+        let prog = 0;
+        const timer = setInterval(() => {
+          prog += Math.random() * 25 + 10;
+          if (prog >= 100) {
+            prog = 100;
+            clearInterval(timer);
+          }
+          setUploadProgress((prev) => ({ ...prev, [key]: Math.min(prog, 100) }));
+        }, 120);
+      });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) processFiles(Array.from(e.target.files));
-  };
+      setFiles((prev) => {
+        const existingKeys = new Set(prev.map((f) => `${f.name}-${f.size}`));
+        const uniqueNew = validFiles.filter((f) => !existingKeys.has(`${f.name}-${f.size}`));
+        return [...prev, ...uniqueNew];
+      });
+    },
+    []
+  );
 
   const removeFile = (index: number) => {
     setFiles((prev) => {
-      const removed = prev[index];
-      const key = `${removed.name}-${removed.size}`;
-      setUploadProgress((p) => { const c = { ...p }; delete c[key]; return c; });
+      const target = prev[index];
+      const key = `${target.name}-${target.size}`;
+      setUploadProgress((prevProg) => {
+        const next = { ...prevProg };
+        delete next[key];
+        return next;
+      });
       return prev.filter((_, i) => i !== index);
     });
   };
 
-  const handleDragEnter = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault(); setIsDragging(true);
+  };
   const handleDragLeave = (e: React.DragEvent) => {
-    if (!dropZoneRef.current?.contains(e.relatedTarget as Node)) setIsDragging(false);
+    if (!dropZoneRef.current?.contains(e.relatedTarget as Node)) {
+      setIsDragging(false);
+    }
   };
   const handleDragOver = (e: React.DragEvent) => e.preventDefault();
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault(); setIsDragging(false);
-    processFiles(Array.from(e.dataTransfer.files));
+    handleFilesAdded(Array.from(e.dataTransfer.files));
   };
 
   // ── Submit → Save Lead → Open WhatsApp ───────────────────────────────────
@@ -353,12 +370,6 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
     
     // Validate all fields
     if (!validateAll()) return;
-
-    const lastSubmission = localStorage.getItem('last_lead_sub');
-    if (lastSubmission && Date.now() - Number(lastSubmission) < 60000) {
-      setErrors({ general: 'Request already received. Please wait 1 minute before submitting again.' });
-      return;
-    }
 
     setIsSubmitting(true);
     setSubmitStatus('IDLE');
@@ -841,7 +852,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                     </p>
                     <p className="text-[10px] text-slate-400 font-medium mt-0.5">Payslips, ITR, Bank Statements · PDF, PNG, JPG ≤ 5MB</p>
                   </div>
-                  <input type="file" ref={fileInputRef} onChange={handleFileChange} multiple accept=".pdf,.jpg,.jpeg,.png" className="hidden" />
+                  <input type="file" ref={fileInputRef} onChange={(e) => e.target.files && handleFilesAdded(Array.from(e.target.files))} multiple accept=".pdf,.jpg,.jpeg,.png" className="hidden" />
                 </motion.div>
 
                 <AnimatePresence>
