@@ -528,28 +528,32 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('wf_leads', JSON.stringify(stored));
         } catch (e) {}
 
-        // Background Webhook Post to Google Apps Script
+        // Guaranteed Webhook Post to Google Apps Script via sendBeacon or await fetch
         const targetWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec';
         
         try {
-            const formData = new URLSearchParams();
-            formData.append('action', 'createLead');
-            formData.append('name', name);
-            formData.append('phone', phone);
-            formData.append('email', email);
-            formData.append('city', city);
-            formData.append('loanType', loanType);
-            formData.append('loanAmount', loanAmountDigits);
-            formData.append('remarks', remarks);
-            formData.append('source', 'WEBSITE_FORM');
+            const webhookParams = new URLSearchParams();
+            webhookParams.append('action', 'createLead');
+            webhookParams.append('name', name);
+            webhookParams.append('phone', phone);
+            webhookParams.append('email', email);
+            webhookParams.append('city', city);
+            webhookParams.append('loanType', loanType);
+            webhookParams.append('loanAmount', loanAmountDigits);
+            webhookParams.append('remarks', remarks);
+            webhookParams.append('source', 'WEBSITE_FORM');
 
-            // Send via fetch without blocking user redirection
-            fetch(targetWebhook, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: formData,
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-            }).catch(err => console.log('Background Webhook post notice:', err));
+            if (navigator.sendBeacon) {
+                const blob = new Blob([webhookParams.toString()], { type: 'application/x-www-form-urlencoded' });
+                navigator.sendBeacon(targetWebhook, blob);
+            } else {
+                await fetch(targetWebhook, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: webhookParams,
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                }).catch(err => console.log('Background Webhook post notice:', err));
+            }
         } catch (err) {
             console.error('Google Apps Script POST error:', err);
         }
@@ -585,9 +589,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const waUrl = `https://wa.me/${DEFAULT_WA_NUMBER}?text=${encodeURIComponent(waMsg)}`;
 
-        alert(`Thank you ${name}! Your enquiry (${leadNumber}) has been submitted successfully.\n\nOpening WhatsApp chat with our loan advisor...`);
-        
-        window.location.href = waUrl;
+        // Display smooth mobile-friendly in-page confirmation banner
+        let successBanner = document.getElementById('wf-submit-success-banner');
+        if (!successBanner) {
+            successBanner = document.createElement('div');
+            successBanner.id = 'wf-submit-success-banner';
+            successBanner.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in';
+            document.body.appendChild(successBanner);
+        }
+
+        successBanner.innerHTML = `
+            <div class="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full text-center shadow-2xl flex flex-col items-center gap-4">
+                <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                    <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800">Enquiry Submitted! 🎉</h3>
+                    <p class="text-xs text-slate-500 mt-1">Lead Ref: <strong class="font-mono text-slate-700">${leadNumber}</strong></p>
+                    <p class="text-xs text-slate-600 mt-2">Connecting you directly with our senior loan advisor on WhatsApp...</p>
+                </div>
+                <a href="${waUrl}" class="w-full py-3.5 bg-[#25D366] hover:bg-[#22c55e] text-white font-bold text-sm rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-green-200 transition-all">
+                    Open WhatsApp Chat Now
+                </a>
+            </div>
+        `;
+
+        setTimeout(() => {
+            window.location.href = waUrl;
+        }, 900);
 
         contactForm.reset();
         Object.keys(touched).forEach(key => touched[key] = false);
