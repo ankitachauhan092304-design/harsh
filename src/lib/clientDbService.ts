@@ -41,7 +41,128 @@ const MOCK_USERS = [
   },
 ];
 
-const MOCK_LEADS: Lead[] = [];
+const MOCK_LEADS: Lead[] = [
+  {
+    id: 'lead-seed-1',
+    leadNumber: 'WF-20260910-514310',
+    name: 'Test Mobile User',
+    phone: '9898989898',
+    email: 'testmobile@gmail.com',
+    city: 'Ahmedabad',
+    employmentType: 'SALARIED',
+    monthlyIncome: 75000,
+    loanType: 'PERSONAL',
+    loanAmount: 200000,
+    status: 'NEW',
+    priority: 'HIGH',
+    tags: 'Website Form',
+    remarks: 'Test submission from mobile debugging',
+    source: 'WEBSITE_FORM',
+    assignedTo: null,
+    assignedToId: null,
+    notes: [],
+    whatsappClicked: true,
+    createdAt: '2026-09-10T10:52:44.000Z',
+    updatedAt: '2026-09-10T10:52:44.000Z',
+    isDeleted: false,
+  },
+  {
+    id: 'lead-seed-2',
+    leadNumber: 'WF-20260825-758440',
+    name: 'Harshtesting',
+    phone: '9898946460',
+    email: 'harsh@whitestonefincorp.com',
+    city: 'Vadodara',
+    employmentType: 'BUSINESS',
+    monthlyIncome: 150000,
+    loanType: 'BUSINESS',
+    loanAmount: 2000000,
+    status: 'CONTACTED',
+    priority: 'HIGH',
+    tags: 'Website Submission',
+    remarks: 'Interested in business expansion loan',
+    source: 'WEBSITE_FORM',
+    assignedTo: null,
+    assignedToId: null,
+    notes: [],
+    whatsappClicked: true,
+    createdAt: '2026-08-25T05:45:47.000Z',
+    updatedAt: '2026-08-25T05:45:47.000Z',
+    isDeleted: false,
+  },
+  {
+    id: 'lead-seed-3',
+    leadNumber: 'WF-20260824-608999',
+    name: 'Shraddha Patel',
+    phone: '9974542041',
+    email: 'shraddha@gmail.com',
+    city: 'Dahod',
+    employmentType: 'SALARIED',
+    monthlyIncome: 80000,
+    loanType: 'PERSONAL',
+    loanAmount: 2000000,
+    status: 'IN_PROGRESS',
+    priority: 'HIGH',
+    tags: 'Website Form',
+    remarks: 'Personal loan documents pending',
+    source: 'WEBSITE_FORM',
+    assignedTo: null,
+    assignedToId: null,
+    notes: [],
+    whatsappClicked: true,
+    createdAt: '2026-08-24T11:54:13.000Z',
+    updatedAt: '2026-08-24T11:54:13.000Z',
+    isDeleted: false,
+  },
+  {
+    id: 'lead-seed-4',
+    leadNumber: 'WF-20260824-676096',
+    name: 'Kuldeep Shrimali',
+    phone: '9898943422',
+    email: 'kuldeep@gmail.com',
+    city: 'Surat',
+    employmentType: 'SALARIED',
+    monthlyIncome: 120000,
+    loanType: 'HOME',
+    loanAmount: 5000000,
+    status: 'APPROVED',
+    priority: 'HIGH',
+    tags: 'Website Submission',
+    remarks: 'Home loan sanction letter issued',
+    source: 'WEBSITE_FORM',
+    assignedTo: null,
+    assignedToId: null,
+    notes: [],
+    whatsappClicked: true,
+    createdAt: '2026-08-24T11:20:54.000Z',
+    updatedAt: '2026-08-24T11:20:54.000Z',
+    isDeleted: false,
+  },
+  {
+    id: 'lead-seed-5',
+    leadNumber: 'WF-20260813-822602',
+    name: 'Himal Bhavsar',
+    phone: '9051197527',
+    email: 'himal@gmail.com',
+    city: 'Ahmedabad',
+    employmentType: 'SALARIED',
+    monthlyIncome: 60000,
+    loanType: 'HOME',
+    loanAmount: 500000,
+    status: 'NEW',
+    priority: 'HIGH',
+    tags: 'Website Submission',
+    remarks: 'Home loan inquiry',
+    source: 'WEBSITE_FORM',
+    assignedTo: null,
+    assignedToId: null,
+    notes: [],
+    whatsappClicked: true,
+    createdAt: '2026-08-13T11:25:28.000Z',
+    updatedAt: '2026-08-13T11:25:28.000Z',
+    isDeleted: false,
+  }
+];
 
 const MOCK_BLOGS: BlogPost[] = [
   {
@@ -201,9 +322,11 @@ export const clientDbService = {
       }
     } catch (err) {}
 
-    const existingLeadNums = new Set(remoteLeads.map((l) => l.leadNumber));
-    const unmergedLocal = localLeads.filter((l) => !existingLeadNums.has(l.leadNumber));
-    const merged = [...unmergedLocal, ...remoteLeads];
+    const existingLeadNums = new Set([...remoteLeads, ...localLeads].map((l) => l.leadNumber));
+    const unmergedMock = MOCK_LEADS.filter((l) => !existingLeadNums.has(l.leadNumber));
+    const existingRemoteNums = new Set(remoteLeads.map((l) => l.leadNumber));
+    const unmergedLocal = localLeads.filter((l) => !existingRemoteNums.has(l.leadNumber));
+    const merged = [...unmergedLocal, ...remoteLeads, ...unmergedMock];
 
     return merged
       .filter((l) => !l.isDeleted && Boolean(l.name?.trim() || l.phone?.trim()))
