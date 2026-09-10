@@ -423,15 +423,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (matches.length > 0) {
                 matches.forEach(city => {
                     const item = document.createElement('div');
-                    item.className = 'px-4 py-2.5 text-xs font-semibold cursor-pointer flex items-center justify-between hover:bg-slate-50 text-slate-700';
+                    item.className = 'px-4 py-3 text-xs font-semibold cursor-pointer flex items-center justify-between hover:bg-slate-50 text-slate-700 active:bg-slate-100';
                     item.innerHTML = `<span>${city}</span><span class="text-[10px] text-slate-400 font-normal">Gujarat</span>`;
-                    item.addEventListener('mousedown', (e) => {
+                    
+                    const chooseCity = (e) => {
                         e.preventDefault();
                         cityInput.value = city;
                         dropdown.classList.add('hidden');
                         touched.city = true;
                         validateCity();
-                    });
+                        updateSubmitButtonState();
+                    };
+
+                    item.addEventListener('pointerdown', chooseCity);
+                    item.addEventListener('touchstart', chooseCity);
+                    item.addEventListener('mousedown', chooseCity);
+                    item.addEventListener('click', chooseCity);
+
                     dropdown.appendChild(item);
                 });
             } else {
@@ -453,7 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         cityInput.addEventListener('blur', () => {
-            setTimeout(() => dropdown.classList.add('hidden'), 200);
+            setTimeout(() => dropdown.classList.add('hidden'), 300);
             touched.city = true;
             validateCity();
         });
