@@ -724,6 +724,7 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                       value={formData.city}
                       onChange={handleInputChange}
                       onFocus={() => setShowCityDropdown(true)}
+                      onClick={() => setShowCityDropdown(true)}
                       onBlur={() => {
                         setTimeout(() => setShowCityDropdown(false), 250);
                         handleBlur('city');
@@ -736,31 +737,15 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                       aria-expanded={showCityDropdown}
                       aria-invalid={touched.city && !!errors.city}
                     />
+                    <ChevronDown
+                      size={14}
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none transition-transform duration-200 ${
+                        showCityDropdown ? 'rotate-180 text-[#0B4F9C]' : ''
+                      } ${touched.city && !errors.city && formData.city ? 'opacity-0' : 'opacity-100'}`}
+                    />
                     {renderValidMark('city')}
                   </div>
                   {renderErrorMsg('city')}
-
-                  {/* Quick City Selection Pills for Mobile & Quick Tap */}
-                  <div className="flex flex-wrap gap-1.5 mt-1">
-                    {['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Gandhinagar', 'Bhavnagar', 'Anand'].map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onPointerDown={(e) => {
-                          e.preventDefault();
-                          selectCity(c);
-                        }}
-                        onClick={() => selectCity(c)}
-                        className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg border transition-all cursor-pointer ${
-                          formData.city.toLowerCase() === c.toLowerCase()
-                            ? 'bg-[#0B4F9C] text-white border-[#0B4F9C] shadow-xs'
-                            : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200'
-                        }`}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                  </div>
 
                   {/* Autocomplete Dropdown */}
                   <AnimatePresence>
