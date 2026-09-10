@@ -203,9 +203,11 @@ export const clientDbService = {
 
     const existingLeadNums = new Set(remoteLeads.map((l) => l.leadNumber));
     const unmergedLocal = localLeads.filter((l) => !existingLeadNums.has(l.leadNumber));
-    const merged = [...remoteLeads, ...unmergedLocal];
+    const merged = [...unmergedLocal, ...remoteLeads];
 
-    return merged.filter((l) => !l.isDeleted && Boolean(l.name?.trim() || l.phone?.trim()));
+    return merged
+      .filter((l) => !l.isDeleted && Boolean(l.name?.trim() || l.phone?.trim()))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   },
 
   async getVisitorAnalytics(): Promise<VisitorAnalytics> {

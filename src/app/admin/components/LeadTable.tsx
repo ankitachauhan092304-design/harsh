@@ -49,23 +49,42 @@ export default function LeadTable({
 
   const canEdit = userRole === 'SUPER_ADMIN' || userRole === 'ADMIN' || userRole === 'LOAN_EXECUTIVE';
 
-  // Filter & Search Engine
+  // Automatically reset to page 1 whenever search query or filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, globalQuery, statusFilter, loanTypeFilter, execFilter]);
+
+  // Filter, Search, and Sort Engine (Latest leads ALWAYS first!)
   const filteredLeads = useMemo(() => {
     const query = (globalQuery || searchQuery).trim().toLowerCase();
-    return leads.filter((lead) => {
+    
+    const filtered = leads.filter((lead) => {
       // Search match across Lead Number, Name, Phone, Email, City, Loan Type, Tags
       const matchesSearch =
         !query ||
-        lead.leadNumber.toLowerCase().includes(query) ||
-        lead.name.toLowerCase().includes(query) ||
-        lead.phone.toLowerCase().includes(query) ||
+        (lead.leadNumber && lead.leadNumber.toLowerCase().includes(query)) ||
+        (lead.name && lead.name.toLowerCase().includes(query)) ||
+        (lead.phone && lead.phone.toLowerCase().includes(query)) ||
         (lead.email && lead.email.toLowerCase().includes(query)) ||
-        lead.city.toLowerCase().includes(query) ||
-        lead.loanType.toLowerCase().includes(query) ||
+        (lead.city && lead.city.toLowerCase().includes(query)) ||
+        (lead.loanType && lead.loanType.toLowerCase().includes(query)) ||
         (lead.tags && lead.tags.toLowerCase().includes(query));
 
-      const matchesStatus = statusFilter === 'ALL' || lead.status === statusFilter;
-      const matchesLoanType = loanTypeFilter === 'ALL' || lead.loanType === loanTypeFilter;
+      // Status match (normalized comparison)
+      const normStatus = (lead.status || '').toUpperCase().replace(/[\s_]+/g, '');
+      const normFilterStatus = statusFilter.toUpperCase().replace(/[\s_]+/g, '');
+      const matchesStatus = statusFilter === 'ALL' || normStatus === normFilterStatus;
+
+      // Loan Category match (normalized comparison across enum keys and human labels)
+      const normLeadType = (lead.loanType || '').toUpperCase().replace(/[\s_]+/g, '');
+      const normFilterType = loanTypeFilter.toUpperCase().replace(/[\s_]+/g, '');
+      const matchesLoanType =
+        loanTypeFilter === 'ALL' ||
+        normLeadType === normFilterType ||
+        normLeadType.includes(normFilterType) ||
+        normFilterType.includes(normLeadType);
+
+      // Executive match
       const matchesExec =
         execFilter === 'ALL'
           ? true
@@ -74,6 +93,13 @@ export default function LeadTable({
           : lead.assignedToId === execFilter;
 
       return matchesSearch && matchesStatus && matchesLoanType && matchesExec;
+    });
+
+    // ALWAYS sort by latest creation date first (newest createdAt timestamp at top!)
+    return filtered.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
     });
   }, [leads, globalQuery, searchQuery, statusFilter, loanTypeFilter, execFilter]);
 
@@ -178,7 +204,10 @@ export default function LeadTable({
             <option value="PERSONAL">Personal Loan</option>
             <option value="BUSINESS">Business Loan</option>
             <option value="HOME">Home Loan</option>
-            <option value="LAP">Loan Against Property</option>
+            <option value="LAP">Loan Against Property (LAP)</option>
+            <option value="PROJECT_LOAN">Project Loan</option>
+            <option value="TOP_UP_LOAN">Top-up Loan</option>
+            <option value="CREDIT_CARD">Credit Card</option>
           </select>
 
           {/* Executive Filter */}
