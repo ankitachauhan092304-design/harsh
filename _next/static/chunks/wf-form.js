@@ -324,7 +324,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const v5 = validateLoanAmount();
         const v6 = validateConsent();
         updateSubmitButtonState();
-        return v1 && v2 && v3 && v4 && v5 && v6;
+        const isValid = v1 && v2 && v3 && v4 && v5 && v6;
+        if (!isValid) {
+            setTimeout(() => {
+                const firstErr = document.querySelector('.wf-inline-error:not(:empty)') || document.querySelector('.border-rose-400');
+                if (firstErr) {
+                    firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 50);
+        }
+        return isValid;
     }
 
     // Initialize Submit Button in Disabled State
@@ -537,7 +546,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {}
 
         // Guaranteed Webhook Post to Google Apps Script via sendBeacon or await fetch
-        const targetWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec';
+        const baseWebhook = localStorage.getItem('wf_google_webhook_url') || 'https://script.google.com/macros/s/AKfycbz0cUzmV5xLrHAG90ECaM1RtYvvFXPn6Qo0cQVE3uNp-6SX6VsfHpeNq1FzdtIdnSbZ/exec';
+        const targetWebhook = baseWebhook.includes('?') ? baseWebhook + '&action=createLead' : baseWebhook + '?action=createLead';
         
         try {
             const webhookParams = new URLSearchParams();
@@ -624,7 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
             window.location.href = waUrl;
-        }, 900);
+        }, 1800);
 
         contactForm.reset();
         Object.keys(touched).forEach(key => touched[key] = false);
