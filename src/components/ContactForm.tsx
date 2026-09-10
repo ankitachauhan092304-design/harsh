@@ -901,19 +901,23 @@ export default function ContactForm({ defaultLoanType = 'PERSONAL' }: FormProps)
                 const isNameOk = formData.name.trim().length >= 2 && /^[a-zA-Z\s\.\-']+$/.test(formData.name.trim());
                 const isPhoneOk = formData.phone.replace(/\D/g, '').length === 10 && /^[6-9]\d{9}$/.test(formData.phone.replace(/\D/g, ''));
                 const isEmailOk = formData.email ? /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email.trim()) : true;
-                const isCityOk = formData.city ? GUJARAT_CITIES.some((c) => c.toLowerCase() === formData.city.trim().toLowerCase()) : true;
+                const isCityOk = formData.city ? formData.city.trim().length >= 2 : false;
+                const isLoanAmountOk = formData.loanAmount ? Number(formData.loanAmount.replace(/\D/g, '')) >= 10000 : false;
                 const isConsentOk = Boolean(formData.consent);
-                const isFormValid = isNameOk && isPhoneOk && isEmailOk && isCityOk && isConsentOk;
+                const isFormValid = isNameOk && isPhoneOk && isEmailOk && isCityOk && isLoanAmountOk && isConsentOk;
 
                 return (
                   <button
                     type="submit"
-                    disabled={!isFormValid || isSubmitting}
-                    className={`w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2.5 relative overflow-hidden group btn-shine ${
-                      isFormValid && !isSubmitting
-                        ? 'bg-gradient-to-r from-[#0B4F9C] via-[#0E5DB5] to-[#00A86B] text-white shadow-xl shadow-blue-500/30 hover:shadow-blue-500/40 active:scale-[0.99] cursor-pointer pointer-events-auto opacity-100 ring-2 ring-emerald-400/50'
-                        : 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-40 shadow-none pointer-events-none'
-                    }`}
+                    disabled={isSubmitting}
+                    onClick={(e) => {
+                      if (!isFormValid && !isSubmitting) {
+                        e.preventDefault();
+                        setTouched({ name: true, phone: true, email: true, city: true, loanAmount: true, loanType: true, consent: true });
+                        validateAll();
+                      }
+                    }}
+                    className={`w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2.5 relative overflow-hidden group btn-shine cursor-pointer pointer-events-auto opacity-100 bg-gradient-to-r from-[#0B4F9C] via-[#0E5DB5] to-[#00A86B] text-white shadow-xl shadow-blue-500/30 hover:shadow-blue-500/40 active:scale-[0.99] ring-2 ring-emerald-400/50`}
                   >
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full duration-700" />
                     {isSubmitting ? (

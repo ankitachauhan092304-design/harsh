@@ -231,8 +231,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!emailInput) return true;
         const val = emailInput.value.toLowerCase().trim();
         if (!val) {
-            setError(emailInput, 'Please enter a valid email address.', 'email');
-            return false;
+            setError(emailInput, '', 'email');
+            return true;
         }
         if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val)) {
             setError(emailInput, 'Please enter a valid email address.', 'email');
@@ -246,12 +246,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!cityInput) return true;
         const val = cityInput.value.trim();
         if (!val) {
-            setError(cityInput, 'Please select a valid city from the list.', 'city');
+            setError(cityInput, 'Please enter your city.', 'city');
             return false;
         }
-        const match = GUJARAT_CITIES.find(c => c.toLowerCase() === val.toLowerCase());
-        if (!match) {
-            setError(cityInput, 'Please select a valid city from the list.', 'city');
+        if (val.length < 2) {
+            setError(cityInput, 'Please enter a valid city name.', 'city');
             return false;
         }
         setError(cityInput, '', 'city');
@@ -281,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function validateConsent() {
         if (!consentCheck) return true;
         if (!consentCheck.checked) {
-            setError(consentCheck, 'Please provide authorization to proceed.', 'consent');
+            setError(consentCheck, 'Please check the authorization box to proceed.', 'consent');
             return false;
         }
         setError(consentCheck, '', 'consent');
@@ -297,36 +296,23 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const isNameOk = Boolean(nameVal.length >= 2 && /^[a-zA-Z\s\.\-']+$/.test(nameVal));
         const isPhoneOk = Boolean(phoneVal.length === 10 && /^[6-9]\d{9}$/.test(phoneVal));
-        const isEmailOk = emailInput ? Boolean(emailVal && /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailVal)) : true;
-        const isCityOk = cityInput ? Boolean(GUJARAT_CITIES.some(c => c.toLowerCase() === cityVal.toLowerCase())) : true;
-        const isLoanOk = loanAmountInput ? Boolean(Number(loanVal) >= 10000) : true;
+        const isEmailOk = emailInput && emailVal ? /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailVal) : true;
+        const isCityOk = cityInput ? Boolean(cityVal.length >= 2) : true;
+        const isLoanOk = loanAmountInput ? Boolean(loanVal.length > 0 && Number(loanVal) >= 10000) : true;
         const isConsentOk = consentCheck ? Boolean(consentCheck.checked) : true;
 
         const isFormValid = isNameOk && isPhoneOk && isEmailOk && isCityOk && isLoanOk && isConsentOk;
 
         if (submitBtn) {
-            submitBtn.disabled = !isFormValid;
-            if (isFormValid) {
-                // Fully Active State: Vibrant Blue-Emerald Gradient, Glowing Shadow, Clickable
-                submitBtn.style.opacity = '1';
-                submitBtn.style.cursor = 'pointer';
-                submitBtn.style.pointerEvents = 'auto';
-                submitBtn.style.background = 'linear-gradient(to right, #0B4F9C, #0E5DB5, #00A86B)';
-                submitBtn.style.color = '#ffffff';
-                submitBtn.style.boxShadow = '0 10px 25px -5px rgba(11, 79, 156, 0.4)';
-                submitBtn.classList.remove('opacity-50', 'opacity-60', 'opacity-70', 'cursor-not-allowed', 'bg-slate-200', 'bg-slate-300', 'text-slate-400');
-                submitBtn.classList.add('cursor-pointer', 'shadow-lg');
-            } else {
-                // Fully Disabled State: Grayed Out, Muted Text, Non-clickable
-                submitBtn.style.opacity = '0.45';
-                submitBtn.style.cursor = 'not-allowed';
-                submitBtn.style.pointerEvents = 'none';
-                submitBtn.style.background = '#cbd5e1';
-                submitBtn.style.color = '#64748b';
-                submitBtn.style.boxShadow = 'none';
-                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                submitBtn.classList.remove('cursor-pointer', 'shadow-lg');
-            }
+            submitBtn.disabled = false;
+            submitBtn.style.pointerEvents = 'auto'; // Fully active and clickable on all mobile & desktop screens
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+            submitBtn.style.background = 'linear-gradient(to right, #0B4F9C, #0E5DB5, #00A86B)';
+            submitBtn.style.color = '#ffffff';
+            submitBtn.style.boxShadow = '0 10px 25px -5px rgba(11, 79, 156, 0.4)';
+            submitBtn.classList.remove('opacity-40', 'opacity-50', 'opacity-60', 'cursor-not-allowed', 'bg-slate-200', 'bg-slate-300', 'text-slate-400', 'text-slate-500');
+            submitBtn.classList.add('cursor-pointer', 'shadow-lg');
         }
     }
 
