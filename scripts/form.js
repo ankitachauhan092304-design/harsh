@@ -324,7 +324,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const v5 = validateLoanAmount();
         const v6 = validateConsent();
         updateSubmitButtonState();
-        return v1 && v2 && v3 && v4 && v5 && v6;
+        const isValid = v1 && v2 && v3 && v4 && v5 && v6;
+        if (!isValid) {
+            setTimeout(() => {
+                const firstErr = document.querySelector('.wf-inline-error:not(:empty)') || document.querySelector('.border-rose-400');
+                if (firstErr) {
+                    firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 50);
+        }
+        return isValid;
     }
 
     // Initialize Submit Button in Disabled State
@@ -625,7 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
             window.location.href = waUrl;
-        }, 900);
+        }, 1800);
 
         contactForm.reset();
         Object.keys(touched).forEach(key => touched[key] = false);
