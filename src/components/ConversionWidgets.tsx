@@ -15,14 +15,23 @@ export default function ConversionWidgets() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Show mobile sticky bottom CTA after scrolling past hero
-      if (window.scrollY > 400) {
+      // Check if contact form section is currently visible in viewport
+      const contactEl = document.getElementById('contact') || document.getElementById('contactForm');
+      let isFormInView = false;
+      if (contactEl) {
+        const rect = contactEl.getBoundingClientRect();
+        isFormInView = rect.top < window.innerHeight - 100 && rect.bottom > 100;
+      }
+
+      // Show mobile sticky bottom CTA after scrolling past hero, but HIDE it when form is in view
+      if (window.scrollY > 400 && !isFormInView) {
         setShowMobileCta(true);
       } else {
         setShowMobileCta(false);
       }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
